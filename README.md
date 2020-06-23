@@ -1,2 +1,2 @@
 # fizyka1
-kuleczki w pudełku
+Zespołowe zadanie programistyczne z fizyki
