@@ -5,9 +5,19 @@ import math
 pygame.init()
 czas = pygame.time.Clock()
 
-H=500                                       # wysokość zbiornika
-L=800                                       # szerokość zbiornika
-screen = pygame.display.set_mode((L,H))     # -------------
+# Założenia projektu
+nH=20                                            # Warunek minimalnego rozmiaru zbiornika: nH, nL >= 20
+nL=30
+R=30                                             # promień R
+H=nH*R                                           # wysokość zbiornika
+L=nL*R                                           # szerokość zbiornika
+N = 8                                            # Liczba atomów N
+
+if N>nH*nL/4:                                    # Sprawdzenie czy liczba atomów nie jest zbyt duża
+    print("Zbyt duża liczba atomów!")
+    sys.exit()
+
+screen = pygame.display.set_mode((L,H))
 
 class Atom():
     def __init__(self,Rect,x,y,s,kolor):
