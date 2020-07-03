@@ -100,12 +100,23 @@ def ruch():
         atom=atomy[i]
         kol=kolizja(i,atomy)
 
-        if atom.Rect.x <=0 or atom.Rect.x + 2*atom.r >= L:             #współrzędne wskazują na lewy górny róg kwadratu który wypełnia kulka
+         if atom.Rect.centerx - atom.r <= 0:
+            atom.Rect.x = 0
             atom.speed_x *= -1
 
-        elif atom.Rect.y <=0 or atom.Rect.y + 2*atom.r >= H:
-            atom.speed_y *= -1
+        elif atom.Rect.centerx + atom.r >= L:
+            atom.Rect.x = L - atom.r * 2
 
+            #print("pyk róg")
+            atom.speed_x *= -1
+
+        elif atom.Rect.centery - atom.r <= 0:
+            #print("pyk odbicie")
+            atom.Rect.y = 0
+            atom.speed_y *= -1
+        elif atom.Rect.centery + atom.r >= H:
+            atom.Rect.y = H - atom.r * 2
+            atom.speed_y *= -1 
 
         elif kol>=0 and tablica[kol]==0:
             atom1=atomy[kol]
