@@ -28,7 +28,6 @@ def odbicie(atom1, atom2):
         [x2, y2] = [atom2.speed_x, atom1.speed_y]
     else:
         x = solve([[atom1.Rect.x, 1], [atom2.Rect.x, 1]], [atom1.Rect.y, atom2.Rect.y])
-        print(x)
         v1 = solve([[1, 1], [x[0], -1 / x[0]]], [atom1.speed_x, atom1.speed_y])
         v2 = solve([[1, 1], [x[0], -1 / x[0]]], [atom2.speed_x, atom2.speed_y])
         [x1, y1] = [v2[0] + v1[1], x[0] * v2[0] + (-1 / x[0] * v1[1])]
@@ -52,7 +51,7 @@ atomy=[]                #lista atomów
 
 s=60                    #średnica
 
-
+''''
 # set 1 ukośne ten sam kierunek x
 obiekt0 = pygame.Rect(200, 200, s, s)
 atom0 = Atom(obiekt0,-3,-3,s,(100,100,250))
@@ -68,7 +67,7 @@ atomy.append(atom2)
 obie3 = pygame.Rect(350, 300, s, s )
 atom3 = Atom(obie3,3,-2,s,(0,0,0))
 atomy.append(atom3)
-
+'''
 # set3    prawo lewo
 obiekt4 = pygame.Rect(70, 430, s, s)
 atom4 = Atom(obiekt4,3,0,s,(50,150,100))
@@ -100,18 +99,18 @@ def ruch():
         atom.Rect.y += atom.speed_y
         # print(atom.col, atom.Rect.x, atom.Rect.y)
     tablica = [0] * len(atomy)
-    print(f"pozycja atomu {atom.col} {atom.Rect.x} i {atom.Rect.y}")
+    #print(f"pozycja atomu {atom.col} {atom.Rect.x} i {atom.Rect.y}")
 
     for i in range(len(atomy)):
         atom=atomy[i]
         kol=kolizja(i,atomy)
 
         if atom.Rect.x <=0 - 3 or atom.Rect.x + 2*atom.r >= L + 3:             #współrzędne wskazują na lewy górny róg kwadratu który wypełnia kulka
-            print("pyk róg")
+            print("pyk róg", i)
             atom.speed_x *= -1
 
         elif atom.Rect.y <=0 - 3 or atom.Rect.y + 2*atom.r >= H + 3:
-            print("pyk odbicie")
+            print("pyk odbicie", i)
             atom.speed_y *= -1
 
 
@@ -126,6 +125,8 @@ def ruch():
             print(f"zderzenie atom {i} i {kol}","\nyspeed", atom.speed_y , atom1.speed_y, "\nxspeed",atom.speed_x , atom1.speed_x)
 
             [atom.speed_x, atom.speed_y, atom1.speed_x, atom1.speed_y] = odbicie(atom, atom1)
+
+            print("new yspeed", atom.speed_y, atom1.speed_y, "\nnew xspeed", atom.speed_x, atom1.speed_x)
 
 
     # print("_____________________________",atom.Rect.colliderect(atom1.Rect))
