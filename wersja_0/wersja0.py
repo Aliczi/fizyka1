@@ -29,11 +29,11 @@ def kolizja(j, atomy):  # zwraca indeks pierwszego atomu z którym wykryje zdarz
         atom2 = atomy[i]
         # print(math.sqrt((atom.Rect.x - atom2.Rect.x) ** 2 + (atom.Rect.y - atom2.Rect.y) ** 2))
         # zamiast 56 2xpromień a x powinien r/10
-        if 56 < math.sqrt((atom.Rect.center[0] - atom2.Rect.center[0])**2 + (atom.Rect.center[1] - atom2.Rect.center[1])**2) <= 60 + 6:
+        # zamiast 56 2xpromień a x powinien r/10
+        if 54 < math.sqrt((atom.Rect.x - atom2.Rect.x)**2 + (atom.Rect.y - atom2.Rect.y)**2) < 2 * atom.r + 4:
             print("kolizja")
             return i
-
-        return -1
+    return -1
 
 
 atomy = []  # lista atomów
@@ -58,7 +58,7 @@ atom3 = Atom(obie3, 3, -2, s, (0, 0, 0))
 atomy.append(atom3)
 
 # set3    prawo lewo
-obiekt4 = pygame.Rect(70, 430, s, s)
+'''obiekt4 = pygame.Rect(70, 430, s, s)
 atom4 = Atom(obiekt4, 3, 0, s, (50, 150, 100))
 atomy.append(atom4)
 obie5 = pygame.Rect(200, 430, s, s)
@@ -71,14 +71,14 @@ atom6 = Atom(obiekt6, 0, 3, s, (250, 100, 250))
 atomy.append(atom6)
 obiekt7 = pygame.Rect(80, 360, s, s)
 atom7 = Atom(obiekt7, 0, -3, s, (100, 250, 250))
-atomy.append(atom7)
+atomy.append(atom7)'''
 
 
 def ruch():
     for atom in atomy:
         # print(atom.col,atom.Rect.x,atom.Rect.y)
-        atom.Rect.x += atom.speed_x
-        atom.Rect.y += atom.speed_y
+        atom.Rect.x += int(atom.speed_x)
+        atom.Rect.y += int(atom.speed_y)
         # print(atom.col, atom.Rect.x, atom.Rect.y)
     tablica = [0] * len(atomy)
     '''print(
@@ -89,26 +89,43 @@ def ruch():
         kol = kolizja(i, atomy)
 
         # współrzędne wskazują na lewy górny róg kwadratu który wypełnia kulka
-        if atom.Rect.center[0] - atom.r <= 0 or atom.Rect.center[0] + atom.r >= L:
-            print("pyk róg")
+        if atom.Rect.centerx - atom.r <= 0:
+            atom.Rect.x = 0
             atom.speed_x *= -1
 
-        elif atom.Rect.center[1] - atom.r <= 0 or atom.Rect.center[1] + atom.r >= H:
-            print("pyk odbicie")
+        if atom.Rect.centerx + atom.r >= L:
+            atom.Rect.x = L - atom.r * 2
+
+            #print("pyk róg")
+            atom.speed_x *= -1
+
+        if atom.Rect.centery - atom.r <= 0:
+            #print("pyk odbicie")
+            atom.Rect.y = 0
+            atom.speed_y *= -1
+        if atom.Rect.centery + atom.r >= H:
+            atom.Rect.y = H - atom.r * 2
             atom.speed_y *= -1
 
-        elif kol >= 0 and tablica[kol] == 0:
+        if kol >= 0 and tablica[kol] == 0:
+            print("PYK")
+            print(atomy[i].speed_x, atomy[i].speed_y)
+            print(atomy[kol].speed_x, atomy[kol].speed_y)
+
             atom1 = atomy[kol]
             tablica[kol] = 1
             tablica[i] = 1
+            print(atom.Rect.center)
+            print(atom1.Rect.center)
 
-            tupl = (atom.Rect.center[0] - atom1.Rect.center[0],  # (r1 - r2)
-                    atom.Rect.center[1] - atom1.Rect.center[1])
+            tupl = (atom.Rect.centerx - atom1.Rect.centerx,  # (r1 - r2)
+                    atom.Rect.centery - atom1.Rect.centery)
 
-            tupl2 = (atom1.Rect.center[0] - atom.Rect.center[0],  # (r2 - r1)
-                     atom1.Rect.center[1] - atom.Rect.center[1])
+            tupl2 = (atom1.Rect.centerx - atom.Rect.centerx,  # (r2 - r1)
+                     atom1.Rect.centery - atom.Rect.centery)
 
-            d = tupl[0]**2 + tupl[1]**2
+            d = (tupl[0]**2) + (tupl[1]**2)
+            d2 = (tupl2[0]**2) + (tupl2[1]**2)
 
             dot1 = ((atom.speed_x - atom1.speed_x) * tupl[0] + (
                 atom.speed_y - atom1.speed_y) * tupl[1]) / d  # (dot/d)
@@ -116,12 +133,17 @@ def ruch():
             dot2 = ((atom1.speed_x - atom.speed_x) * tupl2[0] + (  # drugi atom
                 atom1.speed_y - atom.speed_y) * tupl2[1]) / d
 
-            tupl = (dot1 * tupl[0], dot1 * tupl[1])
-            tupl2 = (dot2 * tupl2[0], dot2 * tupl2[1])
-            atomy[i].speed_x = atom.speed_x - tupl[0]
-            atomy[i].speed_y = atom.speed_y - tupl[1]
-            atomy[kol].speed_x = atom1.speed_x - tupl2[0]
-            atomy[kol].speed_y = atom1.speed_y - tupl2[1]
+            x1 = dot1 * tupl[0]
+            y1 = dot1 * tupl[1]
+            x2 = dot2 * tupl2[0]
+            y2 = dot2 * tupl2[1]
+
+            atomy[i].speed_x -= x1
+            atomy[i].speed_y -= y1
+            atomy[kol].speed_x -= x2
+            atomy[kol].speed_y -= y2
+            print(atomy[i].speed_x, atomy[i].speed_y)
+            print(atomy[kol].speed_x, atomy[kol].speed_y)
 
     # print("_____________________________",atom.Rect.colliderect(atom1.Rect))
 
