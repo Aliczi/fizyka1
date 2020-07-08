@@ -118,7 +118,7 @@ def ruch():
             print(atom.Rect.center)
             print(atom1.Rect.center)
 
-            tupl = (atom.Rect.centerx - atom1.Rect.centerx,  # (r1 - r2)
+            '''tupl = (atom.Rect.centerx - atom1.Rect.centerx,  # (r1 - r2)
                     atom.Rect.centery - atom1.Rect.centery)
 
             tupl2 = (atom1.Rect.centerx - atom.Rect.centerx,  # (r2 - r1)
@@ -143,7 +143,30 @@ def ruch():
             atomy[kol].speed_x -= x2
             atomy[kol].speed_y -= y2
             print(atomy[i].speed_x, atomy[i].speed_y)
-            print(atomy[kol].speed_x, atomy[kol].speed_y)
+            print(atomy[kol].speed_x, atomy[kol].speed_y)'''
+            
+            n = [None, None]
+            t = [None, None]
+
+            n[0] = (atom1.Rect.centerx - atom.Rect.centerx) / (((atom1.Rect.centerx-atom.Rect.centerx)**2 + (atom1.Rect.centery-atom.Rect.centery)**2)**0.5)
+            n[1] = (atom1.Rect.centery - atom.Rect.centery) / (((atom1.Rect.centerx-atom.Rect.centerx)**2 + (atom1.Rect.centery-atom.Rect.centery)**2)**0.5)
+            t[0] = (-1.0 * (atom1.Rect.centery - atom.Rect.centery)) / (((atom1.Rect.centerx-atom.Rect.centerx)**2 + (atom1.Rect.centery-atom.Rect.centery)**2)**0.5)
+            t[1] = (atom1.Rect.centerx - atom.Rect.centerx) / (((atom1.Rect.centerx-atom.Rect.centerx)**2 + (atom1.Rect.centery-atom.Rect.centery)**2)**0.5)
+
+            v1 = [atom.speed_x, atom.speed_y]
+            v2 = [atom1.speed_x, atom1.speed_y]
+            
+            vn1 = vt1 = vn2 = vt2 = 0
+            for i in range(2):
+                vn1 += v1[i] * n[i]
+                vt1 += v1[i] * t[i]
+                vn2 += v2[i] * n[i]
+                vt2 += v2[i] * t[i]
+
+            vn1, vn2 = vn2, vn1
+
+            v1[0], v1[1], v2[0], v2[1] = vn1 * n[0] + vt1 * t[0], vn1 * n[1] + vt1 * t[1], vn2 * n[0] + vt2 * t[0], vn2 * n[1] + vt2 * t[1]
+            atom.speed_x, atom.speed_y, atom1.speed_x, atom1.speed_y = v1[0], v1[1], v2[0], v2[1]
 
     # print("_____________________________",atom.Rect.colliderect(atom1.Rect))
 
