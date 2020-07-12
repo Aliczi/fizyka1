@@ -6,8 +6,8 @@ import numpy
 pygame.init()
 czas = pygame.time.Clock()
 
-H = 500                                       # wysokość zbiornika
-L = 800                                       # szerokość zbiornika
+H = 720                                      # wysokość zbiornika
+L = 1280                                      # szerokość zbiornika
 screen = pygame.display.set_mode((L, H))     # -------------
 
 
@@ -30,8 +30,12 @@ def kolizja(j, atomy):  # zwraca indeks pierwszego atomu z którym wykryje zdarz
         # print(math.sqrt((atom.Rect.x - atom2.Rect.x) ** 2 + (atom.Rect.y - atom2.Rect.y) ** 2))
         # zamiast 56 2xpromień a x powinien r/10
         # zamiast 56 2xpromień a x powinien r/10
-        if 54 < math.sqrt((atom.Rect.x - atom2.Rect.x)**2 + (atom.Rect.y - atom2.Rect.y)**2) < 2 * atom.r + 4:
-            print("kolizja")
+
+        if 54 < math.sqrt((atom.Rect.centerx - atom2.Rect.centerx)**2 + (atom.Rect.centery - atom2.Rect.centery)**2) <= 2 * atom.r + 3:
+
+            '''print("Odleglosc: ", math.sqrt((atom.Rect.centerx - atom2.Rect.centerx)
+                                           ** 2 + (atom.Rect.centery - atom2.Rect.centery)**2))
+            print("kolizja")'''
             return i
     return -1
 
@@ -46,7 +50,7 @@ obiekt0 = pygame.Rect(200, 200, s, s)
 atom0 = Atom(obiekt0, -3, -3, s, (100, 100, 250))
 atomy.append(atom0)
 obie1 = pygame.Rect(100, 100, s, s)
-atom1 = Atom(obie1, 3, 3, s, (250, 100, 100))
+atom1 = Atom(obie1, 3, 3, s, (0, 0, 0))
 atomy.append(atom1)
 
 # set2 ukośne ten sam kierunek y
@@ -58,7 +62,7 @@ atom3 = Atom(obie3, 3, -2, s, (0, 0, 0))
 atomy.append(atom3)
 
 # set3    prawo lewo
-'''obiekt4 = pygame.Rect(70, 430, s, s)
+obiekt4 = pygame.Rect(70, 430, s, s)
 atom4 = Atom(obiekt4, 3, 0, s, (50, 150, 100))
 atomy.append(atom4)
 obie5 = pygame.Rect(200, 430, s, s)
@@ -71,14 +75,32 @@ atom6 = Atom(obiekt6, 0, 3, s, (250, 100, 250))
 atomy.append(atom6)
 obiekt7 = pygame.Rect(80, 360, s, s)
 atom7 = Atom(obiekt7, 0, -3, s, (100, 250, 250))
-atomy.append(atom7)'''
+atomy.append(atom7)
+
+# set5              góra dół
+'''obiekt8 = pygame.Rect(200, 200, s, s)
+atom8 = Atom(obiekt8, 0, 3, s, (250, 100, 250))
+atomy.append(atom8)
+obiekt9 = pygame.Rect(260, 300, s, s)
+atom9 = Atom(obiekt9, -0.5, 0, s, (100, 250, 250))
+atomy.append(atom9)'''
+pozycja_x = []
+pozycja_y = []
+for atom in atomy:
+    pozycja_x.append(atom.Rect.x)
+    pozycja_y.append(atom.Rect.y)
 
 
 def ruch():
+    i = 0
     for atom in atomy:
         # print(atom.col,atom.Rect.x,atom.Rect.y)
-        atom.Rect.x += int(atom.speed_x)
-        atom.Rect.y += int(atom.speed_y)
+        pozycja_x[i] += atom.speed_x
+        pozycja_y[i] += atom.speed_y
+        atom.Rect.x = int(pozycja_x[i])
+        atom.Rect.y = int(pozycja_y[i])
+        i += 1
+
         # print(atom.col, atom.Rect.x, atom.Rect.y)
     tablica = [0] * len(atomy)
     '''print(
@@ -89,40 +111,49 @@ def ruch():
         kol = kolizja(i, atomy)
 
         # współrzędne wskazują na lewy górny róg kwadratu który wypełnia kulka
-        if atom.Rect.centerx - atom.r <= 0:
-            atom.Rect.x = 0
+        if atom.Rect.centerx - atom.r <= 0 and atom.speed_x < 0:
+            print("PYK")
+            print(atom.Rect.centerx - atom.r)
+            print(atom.Rect.centerx)
+            print(i, "SZYB:  ", atomy[i].speed_x)
             atom.speed_x *= -1
-
-        if atom.Rect.centerx + atom.r >= L:
-            atom.Rect.x = L - atom.r * 2
-
+            print(atomy[i].speed_x)
+        elif atom.Rect.centerx + atom.r >= L and atom.speed_x > 0:
+            atomy[i].Rect.x = L - atom.r * 2
             #print("pyk róg")
+            atomy[i].speed_x *= -1
+
+        elif atom.Rect.centery - atom.r <= 0 and atom.speed_y < 0:
+            #print("pyk odbicie")
+            atomy[i].Rect.y = 0
+            atomy[i].speed_y *= -1
+        elif atom.Rect.centery + atom.r >= H and atom.speed_y > 0:
+            atomy[i].Rect.y = H - atom.r * 2
+            atomy[i].speed_y *= -1
+        '''if atom.Rect.x <= 0 or atom.Rect.x + 2 * atom.r >= L:  # współrzędne wskazują na lewy górny róg kwadratu który wypełnia kulka
+            print("pyk róg")
             atom.speed_x *= -1
 
-        if atom.Rect.centery - atom.r <= 0:
-            #print("pyk odbicie")
-            atom.Rect.y = 0
-            atom.speed_y *= -1
-        if atom.Rect.centery + atom.r >= H:
-            atom.Rect.y = H - atom.r * 2
-            atom.speed_y *= -1
+        elif atom.Rect.y <= 0 or atom.Rect.y + 2 * atom.r >= H:
+            print("pyk odbicie")
+            atom.speed_y *= -1'''
 
         if kol >= 0 and tablica[kol] == 0:
-            print("PYK")
-            print(atomy[i].speed_x, atomy[i].speed_y)
-            print(atomy[kol].speed_x, atomy[kol].speed_y)
-
             atom1 = atomy[kol]
             tablica[kol] = 1
             tablica[i] = 1
-            print(atom.Rect.center)
+            xs = pozycja_x[i]
+            ys = pozycja_y[i]
+            xs1 = pozycja_x[kol]
+            ys1 = pozycja_y[kol]
+            print(atom.Rect.centerx)
             print(atom1.Rect.center)
 
-            '''tupl = (atom.Rect.centerx - atom1.Rect.centerx,  # (r1 - r2)
-                    atom.Rect.centery - atom1.Rect.centery)
+            tupl = (xs - xs1,  # (r1 - r2)
+                    ys - ys1)
 
-            tupl2 = (atom1.Rect.centerx - atom.Rect.centerx,  # (r2 - r1)
-                     atom1.Rect.centery - atom.Rect.centery)
+            tupl2 = (xs1 - xs,  # (r2 - r1)
+                     ys1 - ys)
 
             d = (tupl[0]**2) + (tupl[1]**2)
             d2 = (tupl2[0]**2) + (tupl2[1]**2)
@@ -142,10 +173,9 @@ def ruch():
             atomy[i].speed_y -= y1
             atomy[kol].speed_x -= x2
             atomy[kol].speed_y -= y2
-            print(atomy[i].speed_x, atomy[i].speed_y)
-            print(atomy[kol].speed_x, atomy[kol].speed_y)'''
-            
-            n = [None, None]
+            #print(atomy[i].speed_x, atomy[i].speed_y)
+            #print(atomy[kol].speed_x, atomy[kol].speed_y)
+            '''n = [None, None]
             t = [None, None]
 
             n[0] = (atom1.Rect.centerx - atom.Rect.centerx) / (((atom1.Rect.centerx-atom.Rect.centerx)**2 + (atom1.Rect.centery-atom.Rect.centery)**2)**0.5)
@@ -155,7 +185,7 @@ def ruch():
 
             v1 = [atom.speed_x, atom.speed_y]
             v2 = [atom1.speed_x, atom1.speed_y]
-            
+
             vn1 = vt1 = vn2 = vt2 = 0
             for i in range(2):
                 vn1 += v1[i] * n[i]
@@ -166,8 +196,7 @@ def ruch():
             vn1, vn2 = vn2, vn1
 
             v1[0], v1[1], v2[0], v2[1] = vn1 * n[0] + vt1 * t[0], vn1 * n[1] + vt1 * t[1], vn2 * n[0] + vt2 * t[0], vn2 * n[1] + vt2 * t[1]
-            atom.speed_x, atom.speed_y, atom1.speed_x, atom1.speed_y = v1[0], v1[1], v2[0], v2[1]
-
+            atom.speed_x, atom.speed_y, atom1.speed_x, atom1.speed_y = v1[0], v1[1], v2[0], v2[1]'''
     # print("_____________________________",atom.Rect.colliderect(atom1.Rect))
 
         pygame.draw.ellipse(screen, atom.col, atom.Rect)
@@ -179,7 +208,6 @@ while True:
         if event.type == pygame.QUIT:  # wyście iksem z okienka konczy program
             pygame.quit()
             sys.exit()
-
     screen.fill((80, 80, 80))  # zmienia kolor tła okna
     ruch()
     pygame.display.flip()  # wyświetla obiekty
