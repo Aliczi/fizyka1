@@ -389,6 +389,9 @@ while True:
                 nowy_atom.caption = f"Atomy: {len(atomy)} "
             elif nowy_atom_minus.mouse_over_button(pos) and atomy:
                 atomy.pop()
+                pozycja_y.pop()
+                pozycja_x.pop()
+                odbicia.pop()
                 nowy_atom.caption = f"Atomy: {len(atomy)} "
 
         elif event.type == pygame.VIDEORESIZE:
