@@ -4,30 +4,29 @@ import math
 import random
 
 
-global d, R
 
-pygame.init()
-czas = pygame.time.Clock()
+
+
 
 
 """     Założenia projektu      """
 
-etaH = 20  # Warunek minimalnego rozmiaru zbiornika: nH, nL >= 20
-etaL = 20
+etaH = 25  # Warunek minimalnego rozmiaru zbiornika: nH, nL >= 20
+etaL = 25
 R = 30  # promień R
 s = 2 * R  # średnica
+vGen = 1     # Prędkość
+tol = R / 10  # tolerancja zderzenia'
+M = 10
+time = 0
+lambdy = []
 H = etaH * R  # wysokość zbiornika
 L = etaL * R  # szerokość zbiornika
-vGen = 3  # Prędkość
-d = R / 10  # tolerancja zderzenia'
-
-krok_czasu_startowy = vGen * min(etaH, etaL)
+ilosc=45 #ilosc atomow
+krok_czasu_startowy = (vGen * min(etaH, etaL))
 krok_czasu = krok_czasu_startowy
-
-screen = pygame.display.set_mode((L, H + 40), pygame.RESIZABLE)
-pygame.display.set_caption("Symulacja atomów")
-
-
+delta_t = M * krok_czasu
+nazwa = "M10A45.txt"
 """_________________________________________________________"""
 
 
@@ -95,317 +94,409 @@ def rys_menu(screen):
 
 
 class Atom():
-    def __init__(self, Rect, x, y, s, kolor):
-        self.Rect = Rect
-        self.speed_x = x
-        self.speed_y = y
-        self.x = Rect.center[0]
-        self.y = Rect.center[1]
+    def __init__(self, x, y, speed_x, speed_y, s, kolor):
+        self.speed_x = speed_x
+        self.speed_y = speed_y
+        self.x = x
+        self.y = y
 
         self.r = s / 2
         self.col = kolor
 
+    def move(self, czas):
+        self.x += self.speed_x
+        self.y += self.speed_y
+
+    def dystans (self,atom2):
+        return (math.sqrt((atom2.x - self.x) ** 2 + (self.y - atom2.y) ** 2))
+
 
 atomy = []  # lista atomów
-pozycja_x = []
-pozycja_y = []
+
+def dodaj(L, H, R, vGen, atomy,z):
+    print(H)
+    for g in range(z):
+        i=7
+        while i != 0:
+            xx = int(random.randrange(0.0 + R, L -  R))
+            yy = int(random.randrange(0.0 + R, H - R))
+            i = len(atomy)
+            at = Atom(xx, yy, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (0, 0, 255))
+            for j in range(len(atomy)):
+                if (at.dystans(atomy[j])) <= s + tol:
+                    break
+
+                i -= 1
+        print(at.x, at.y)
+        atomy.append(at)
+        odbicia.append(-1)
 
 
-def dodaj(L, H, R, vGen):
-    xx = random.uniform(0.0 + R, L - R)
-    yy = random.uniform(0.0 + R, H - R)
-    atomy.append(Atom(pygame.Rect(xx, yy, 2 * R, 2 * R), random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 *
-                                                                                                           vGen, vGen), s, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))))
+s = R*2  # średnica
 
-    pozycja_x.append(xx)
-    pozycja_y.append(yy)
-    odbicia.append(-1)
-
+"""________________________________Dodatkowy atom______________________________________"""
+time = 0
+lambdy = []
+czerfony = Atom(R, R, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (255, 0, 0))
+atomy.append(czerfony)
 
 """________________________________Testowy zestaw atomów______________________________________"""
-s = 60  # średnica
 
-obiekt0 = pygame.Rect(200, 200, s, s)
-atom0 = Atom(obiekt0, -3, -3, s, (100, 100, 250))
-atomy.append(atom0)
-obie1 = pygame.Rect(100, 100, s, s)
-atom1 = Atom(obie1, 3, 3, s, (250, 100, 100))
-atomy.append(atom1)
-
-obiekt2 = pygame.Rect(360, 360, s, s)
-atom2 = Atom(obiekt2, -3, -4, s, (255, 255, 255))
-atomy.append(atom2)
-obie3 = pygame.Rect(350, 290, s, s)
-atom3 = Atom(obie3, 3, -2, s, (0, 0, 0))
-atomy.append(atom3)
-
-# set3    prawo lewo
-obiekt4 = pygame.Rect(70, 430, s, s)
-atom4 = Atom(obiekt4, 3, 0, s, (50, 150, 100))
-atomy.append(atom4)
-obie5 = pygame.Rect(200, 430, s, s)
-atom5 = Atom(obie5, -3, 0, s, (250, 250, 100))
-atomy.append(atom5)
+# atom0 = Atom(200,200, -vGen, -vGen, s, (100, 100, 250))
+# atomy.append(atom0)
+# atom1 = Atom(100,100, vGen, vGen, s, (250, 100, 100))
+# atomy.append(atom1)
 #
-# set4              góra dół
-obiekt6 = pygame.Rect(80, 200, s, s)
-atom6 = Atom(obiekt6, 0, 3, s, (250, 100, 250))
-atomy.append(atom6)
-obiekt7 = pygame.Rect(80, 360, s, s)
-atom7 = Atom(obiekt7, 0, -3, s, (100, 250, 250))
-atomy.append(atom7)
-for atom in atomy:
-    pozycja_x.append(atom.Rect.x)
-    pozycja_y.append(atom.Rect.y)
+# atom2 = Atom(360,360, -vGen, -vGen, s, (255, 255, 255))
+# atomy.append(atom2)
+# atom3 = Atom(350,290, vGen, -vGen, s, (0, 0, 0))
+# atomy.append(atom3)
+#
+# # set3    prawo lewo
+# atom4 = Atom(70,430, vGen, 0, s, (50, 150, 100))
+# atomy.append(atom4)
+# atom5 = Atom(200,430, -vGen, 0, s, (250, 250, 100))
+# atomy.append(atom5)
+# #
+# # set4              góra dół
+# atom6 = Atom(80,200, 0, vGen, s, (250, 100, 250))
+# atomy.append(atom6)
+# atom7 = Atom(80,360, 0, -vGen, s, (100, 250, 250))
+# atomy.append(atom7)
+
+#test
+# obiekt6 = pygame.Rect(80, 310, s, s)
+# atom6 = Atom(obiekt6, 0, vGen, s, (250, 100, 250))
+# atomy.append(atom6)
+# obiekt7 = pygame.Rect(80, 370, s, s)
+# atom7 = Atom(obiekt7, 0, -3, s, (100, 250, 250))
+# atomy.append(atom7)
+#
+# obiekt4 = pygame.Rect(80, 435, s, s)
+# atom4 = Atom(obiekt4, 0, -3, s, (50, 150, 100))
+# atomy.append(atom4)
+# obie5 = pygame.Rect(80, 430, s, s)
+# atom5 = Atom(obie5, -vGen, 0, s, (250, 250, 100))
+# atomy.append(atom5)
+
+
+
+def ruch():
+    global etaH, etaL, R, s, H, L, vGen, tol, M, atomy, lamby, time, ilosc, krok_czasu_startowy, krok_czasu, delta_t, nazwa
+    # poruszanie atomami
+    for i in range(len(atomy)):
+        atom = atomy[i]
+        # KOLIZJE Z ATOMAMI
+        for j in range(i + 1, len(atomy)):
+            atom2 = atomy[j]
+            if i == 0 or j == 0:
+                pos1 = (atomy[0].x, atomy[0].y)
+            # sprawdzanie czy atomy w siebie "wniknęły" po przemieszczeniu, jeżeli tak to oddalają się od siebie
+            while s >= atom.dystans(atom2) and (i != odbicia[j] or j != odbicia[i]):
+                atom.x -= atom.speed_x / 4
+                atom.y -= atom.speed_y / 4
+
+                print("wnik")
+                # atom.Rect.x = int(pozycja_x[i])
+                # atom.Rect.y = int(pozycja_y[i])
+
+                atom2.x -= atom2.speed_x / 4
+                atom2.y -= atom2.speed_y / 4
+                # atom2.Rect.x = int(pozycja_x[j])
+                # atom2.Rect.y = int(pozycja_y[j])
+
+            if i == 0 or j == 0:
+                pos2 = (atomy[0].x, atomy[0].y)
+
+                # sprawdzanie czy czerwony atom się przesunąl i oblizanie o ile
+
+                if pos1 != pos2:
+                    odl = math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
+                else:
+                    odl = 0
+
+            # Odbicie
+            if s < atom.dystans(atom2) <= s + tol and (i != odbicia[j] or j != odbicia[i]):
+                if i == 0 or j == 0:
+                    lambdy.append(math.sqrt((time * atomy[0].speed_x) ** 2 + (time * atomy[0].speed_y) ** 2) - odl)
+                    print(i, j)
+
+                    time = 0
+                atom1 = atomy[j]
+                odbicia[i] = j
+                odbicia[j] = i
+                xs = atom.x
+                ys = atom.y
+                xs1 = atom1.x
+                ys1 = atom1.y
+                tupl = (xs - xs1,  # (r1 - r2)
+                        ys - ys1)
+
+                tupl2 = (xs1 - xs,  # (r2 - r1)
+                         ys1 - ys)
+
+                d = (tupl[0] ** 2) + (tupl[1] ** 2)
+
+                dot1 = ((atom.speed_x - atom1.speed_x) * tupl[0] + (
+                        atom.speed_y - atom1.speed_y) * tupl[1]) / d  # (dot/d)
+
+                dot2 = ((atom1.speed_x - atom.speed_x) * tupl2[0] + (  # drugi atom
+                        atom1.speed_y - atom.speed_y) * tupl2[1]) / d
+
+                x1 = dot1 * tupl[0]
+                y1 = dot1 * tupl[1]
+                x2 = dot2 * tupl2[0]
+                y2 = dot2 * tupl2[1]
+
+                atom.speed_x -= x1
+                atom.speed_y -= y1
+                atom1.speed_x -= x2
+                atom1.speed_y -= y2
+        atom = atomy[i]
+        if atom.x - atom.r < 0:
+            atomy[i].x = atom.r
+            atom.speed_x *= -1
+            # print(atomy[i].speed_x)
+            odbicia[i] = -1
+        elif atom.x + atom.r > L:
+            atomy[i].x = L - atom.r
+            # print("pyk róg")
+            atomy[i].speed_x *= -1
+            odbicia[i] = -1
+        elif atom.y - atom.r < 0:
+            # print("pyk odbicie")
+            atomy[i].y = atom.r
+            atomy[i].speed_y *= -1
+            odbicia[i] = -1
+        elif atom.y + atom.r > H:
+            print(H)
+            atomy[i].y = H - atom.r
+            atomy[i].speed_y *= -1
+            odbicia[i] = -1
+
+    for i in range(len(atomy)):
+        atomy[i].move(krok_czasu)
 
 """__________________________________________________________________________________________________________________________________"""
 
 
 # zwraca indeks pierwszego atomu z którym wykryje zdarzenie
-def kolizja(j, atomy, pozx, pozy):
-    atom = atomy[j]
-    for i in range(len(atomy)):
-        atom2 = atomy[i]
-        # print(math.sqrt((atom.Rect.x - atom2.Rect.x) ** 2 + (atom.Rect.y - atom2.Rect.y) ** 2))
-        # zamiast 56 2xpromień a x powinien r/10
-        # zamiast 56 2xpromień a x powinien r/10
-        if 60 > (math.sqrt((pozx[j] - pozx[i])**2 + (pozy[j] - pozy[i])**2)) and i != j and i != odbicia[j]:
-            return i, True
-        if 60 < (math.sqrt((pozx[j] - pozx[i])**2 + (pozy[j] - pozy[i])**2)) <= 60 + 3 and i != j and i != odbicia[j]:
-
-            '''print("Odleglosc: ", math.sqrt((atom.Rect.centerx - atom2.Rect.centerx)
-                                           ** 2 + (atom.Rect.centery - atom2.Rect.centery)**2))
-            print("kolizja")'''
-            return i, False
-    return -1, False
-
 
 odbicia = [-1] * len(atomy)
 
-
-def ruch(screen, L, H):
-    i = 0
-
-    # print(odbicia)
-    for atom in atomy:
-        # print(atom.col,atom.Rect.x,atom.Rect.y)
-        pozycja_x[i] += atom.speed_x
-        pozycja_y[i] += atom.speed_y
-        atom.Rect.x = int(pozycja_x[i])
-        atom.Rect.y = int(pozycja_y[i])
-        i += 1
-
-        # print(atom.col, atom.Rect.x, atom.Rect.y)
-    '''print(
-        f"pozycja atomu {atom.col} {atom.Rect.center[0]} i {atom.Rect.center[1]}")'''
-
-    #tablica = [0] * len(atomy)
-    pozx=pozycja_x
-    pozy=pozycja_y
-    for i in range(len(atomy)):
-        atom = atomy[i]
-        #KOLIZJE Z ATOMAMI
-        for j in range(len(atomy)):
-            atom2 = atomy[j]
-            # sprawdzanie czy atomy w siebie "wniknęły" po przemieszczeniu, jeżeli tak to oddalają się od siebie
-            while 60 > (math.sqrt((pozx[j] - pozx[i]) ** 2 + (pozy[j] - pozy[i]) ** 2)) and i != j and i != odbicia[j]:
-                pozycja_x[i] -= atom.speed_x/4
-                pozycja_y[i] -= atom.speed_y/4
-                atom.Rect.x = int(pozycja_x[i])
-                atom.Rect.y = int(pozycja_y[i])
-
-                pozycja_x[j] -= atom2.speed_x / 4
-                pozycja_y[j] -= atom2.speed_y / 4
-                atom2.Rect.x = int(pozycja_x[j])
-                atom2.Rect.y = int(pozycja_y[j])
-            #Odbicie
-            if 60 < (math.sqrt((pozx[j] - pozx[i]) ** 2 + (pozy[j] - pozy[i]) ** 2)) <= 60 + 3 and i != j and i != \
-                    odbicia[j]:
-                atom1 = atomy[j]
-                odbicia[j] = i
-                odbicia[i] = j
-                # tablica[kol] = 1
-                # tablica[i] = 1
-                xs = pozycja_x[i]
-                ys = pozycja_y[i]
-                xs1 = pozycja_x[j]
-                ys1 = pozycja_y[j]
-                n = [None, None]
-                t = [None, None]
-                n[0] = (xs1 - xs) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
-                n[1] = (ys1 - ys) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
-                t[0] = (-1.0 * (ys1 - ys)) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
-                t[1] = (xs1 - xs) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
-                v1 = [atom.speed_x, atom.speed_y]
-                v2 = [atom1.speed_x, atom1.speed_y]
-                vn1 = vt1 = vn2 = vt2 = 0
-                for i in range(2):
-                    vn1 += v1[i] * n[i]
-                    vt1 += v1[i] * t[i]
-                    vn2 += v2[i] * n[i]
-                    vt2 += v2[i] * t[i]
-                vn1, vn2 = vn2, vn1
-                v1[0], v1[1], v2[0], v2[1] = vn1 * n[0] + vt1 * t[0], vn1 * n[1] + \
-                                             vt1 * t[1], vn2 * n[0] + vt2 * t[0], vn2 * n[1] + vt2 * t[1]
-                atom.speed_x, atom.speed_y, atom1.speed_x, atom1.speed_y = v1[0], v1[1], v2[0], v2[1]
-        # współrzędne wskazują na lewy górny róg kwadratu który wypełnia kulka
-        if atom.Rect.centerx - atom.r <= 0 and atom.speed_x < 0:
-            # print("PYK")
-            #print(atom.Rect.centerx - atom.r)
-            # print(atom.Rect.centerx)
-            #print(i, "SZYB:  ", atomy[i].speed_x)
-            atom.speed_x *= -1
-            # print(atomy[i].speed_x)
-            odbicia[i] = -1
-        elif atom.Rect.centerx + atom.r >= L and atom.speed_x > 0:
-            atomy[i].Rect.x = L - atom.r * 2
-            # print("pyk róg")
-            atomy[i].speed_x *= -1
-            odbicia[i] = -1
-        elif atom.Rect.centery - atom.r <= 0 and atom.speed_y < 0:
-            # print("pyk odbicie")
-            atomy[i].Rect.y = 0
-            atomy[i].speed_y *= -1
-            odbicia[i] = -1
-        elif atom.Rect.centery + atom.r >= H and atom.speed_y > 0:
-            atomy[i].Rect.y = H - atom.r * 2
-            atomy[i].speed_y *= -1
-            odbicia[i] = -1
-        '''if atom.Rect.x <= 0 or atom.Rect.x + 2 * atom.r >= L:  # współrzędne wskazują na lewy górny róg kwadratu który wypełnia kulka
-            print("pyk róg")
-            atom.speed_x *= -1
-        elif atom.Rect.y <= 0 or atom.Rect.y + 2 * atom.r >= H:
-            print("pyk odbicie")
-            atom.speed_y *= -1
-
-        if kol >= 0 and (odbicia[i] != kol or odbicia[kol] != i):
-            atom1 = atomy[kol]
-            odbicia[kol] = i
-            odbicia[i] = kol
-            #tablica[kol] = 1
-            #tablica[i] = 1
-            xs = pozycja_x[i]
-            ys = pozycja_y[i]
-            xs1 = pozycja_x[kol]
-            ys1 = pozycja_y[kol]
-            print(atom.Rect.centerx)
-            print(atom1.Rect.center)
-
-            tupl = (xs - xs1,  # (r1 - r2)
-                    ys - ys1)
-
-            tupl2 = (xs1 - xs,  # (r2 - r1)
-                     ys1 - ys)
-
-            d = (tupl[0]**2) + (tupl[1]**2)
-            d2 = (tupl2[0]**2) + (tupl2[1]**2)
-
-            dot1 = ((atom.speed_x - atom1.speed_x) * tupl[0] + (
-                atom.speed_y - atom1.speed_y) * tupl[1]) / d  # (dot/d)
-
-            dot2 = ((atom1.speed_x - atom.speed_x) * tupl2[0] + (  # drugi atom
-                atom1.speed_y - atom.speed_y) * tupl2[1]) / d
-
-            x1 = dot1 * tupl[0]
-            y1 = dot1 * tupl[1]
-            x2 = dot2 * tupl2[0]
-            y2 = dot2 * tupl2[1]
-
-            atomy[i].speed_x -= x1
-            atomy[i].speed_y -= y1
-            atomy[kol].speed_x -= x2
-            atomy[kol].speed_y -= y2
-            # print(atomy[i].speed_x, atomy[i].speed_y)
-            # print(atomy[kol].speed_x, atomy[kol].speed_y)
-            n = [None, None]
-            t = [None, None]
-            n[0] = (xs1 - xs) / (((xs1 - xs)**2 + (ys1 - ys)**2)**0.5)
-            n[1] = (ys1 - ys) / (((xs1 - xs)**2 + (ys1 - ys)**2)**0.5)
-            t[0] = (-1.0 * (ys1 - ys)) / (((xs1 - xs)**2 + (ys1 - ys)**2)**0.5)
-            t[1] = (xs1 - xs) / (((xs1 - xs)**2 + (ys1 - ys)**2)**0.5)
-            v1 = [atom.speed_x, atom.speed_y]
-            v2 = [atom1.speed_x, atom1.speed_y]
-            vn1 = vt1 = vn2 = vt2 = 0
-            for i in range(2):
-                vn1 += v1[i] * n[i]
-                vt1 += v1[i] * t[i]
-                vn2 += v2[i] * n[i]
-                vt2 += v2[i] * t[i]
-            vn1, vn2 = vn2, vn1
-            v1[0], v1[1], v2[0], v2[1] = vn1 * n[0] + vt1 * t[0], vn1 * n[1] + \
-                vt1 * t[1], vn2 * n[0] + vt2 * t[0], vn2 * n[1] + vt2 * t[1]
-            atom.speed_x, atom.speed_y, atom1.speed_x, atom1.speed_y = v1[0], v1[1], v2[0], v2[1]
-    print("_____________________________",atom.Rect.colliderect(atom1.Rect))'''
-        pygame.draw.ellipse(screen, atom.col, atom.Rect)
-
-
 """_________________________________________________________________"""
+def main():
+    global etaH,etaL,R,s,H, L, vGen,tol,M, atomy, lamby, time,ilosc, krok_czasu_startowy,krok_czasu,delta_t,nazwa
+
+    print(H)
 
 
-czasowy.caption = f" γt = {krok_czasu_startowy}"
-nowy_atom.caption = f"Atomy: {len(atomy)} "
+    screen = pygame.display.set_mode((L, H), pygame.RESIZABLE)
+
+    pygame.display.set_caption("Symulacja atomów")
+    pygame.init()
+    czasowy.caption = f" γt = {krok_czasu_startowy}"
+    nowy_atom.caption = f"Atomy: {len(atomy)} "
+    czas = pygame.time.Clock()
+    dodaj(L , H , R , vGen, atomy,ilosc)
+
+    # Pętla programu
+    while True:
+        if delta_t > 0:
+            delta_t -= 1
+            time += 1
+            czas.tick(krok_czasu)  # spowalnia, max 60 klatek na sekundę
+            pos = pygame.mouse.get_pos()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # wyście iksem z okienka konczy program
+                    pygame.quit()
+                    sys.exit()
+                # elif event.type == pygame.MOUSEBUTTONDOWN:
+                #     if jedenminus.mouse_over_button(pos) and etaH > 20:
+                #         etaH -= 1
+                #         H = etaH * R
+                #         screen = pygame.display.set_mode((L, H + 40))
+                #         jeden.caption = "etaH: " + str(etaH)
+                #     elif jedenplus.mouse_over_button(pos) and etaH < 40:
+                #         etaH += 1
+                #         H = etaH * R
+                #         screen = pygame.display.set_mode((L, H + 40))
+                #         jeden.caption = "etaH: " + str(etaH)
+                #     elif dwaplus.mouse_over_button(pos) and etaL < 40:
+                #         etaL += 1
+                #         L = etaL * R
+                #         panel.rect.width = L
+                #         screen = pygame.display.set_mode((L, H))
+                #         dwa.caption = "etaL: " + str(etaL)
+                #     elif dwaminus.mouse_over_button(pos) and etaL > 20:
+                #         etaL -= 1
+                #         L = etaL * R
+                #         screen = pygame.display.set_mode((L, H))
+                #         panel.rect.width = L
+                #         dwa.caption = "etaL: " + str(etaL)
+                #     elif czasowyminus.mouse_over_button(pos) and krok_czasu >= 10:
+                #         krok_czasu -= 10
+                #         czasowy.caption = "γt: " + str(krok_czasu)
+                #     elif czasowyplus.mouse_over_button(pos):
+                #         krok_czasu += 10
+                #         czasowy.caption = "γt: " + str(krok_czasu)
+                #     elif nowy_atom_plus.mouse_over_button(pos) and len(atomy) < (etaH * etaL / 4):
+                #         dodaj(L, H, R, vGen)
+                #
+                #         nowy_atom.caption = f"Atomy: {len(atomy)} "
+                #     elif nowy_atom_minus.mouse_over_button(pos) and atomy:
+                #         atomy.pop()
+                #         odbicia.pop()
+                #         nowy_atom.caption = f"Atomy: {len(atomy)} "
+                #
+                # elif event.type == pygame.VIDEORESIZE:
+                #     L = event.w
+                #     H = event.h
+                #     panel.rect.width = L
+                #     screen = pygame.display.set_mode(
+                #         (event.w, event.h), pygame.RESIZABLE)
+
+            # poruszanie atomami
+            for i in range(len(atomy)):
+                atom = atomy[i]
+                # KOLIZJE Z ATOMAMI
+                for j in range(i + 1, len(atomy)):
+                    atom2 = atomy[j]
+                    if i == 0 or j == 0:
+                        pos1 = (atomy[0].x, atomy[0].y)
+                    # sprawdzanie czy atomy w siebie "wniknęły" po przemieszczeniu, jeżeli tak to oddalają się od siebie
+                    while s >= atom.dystans(atom2) and (i != odbicia[j] or j != odbicia[i]):
+                        atom.x -= atom.speed_x / 4
+                        atom.y -= atom.speed_y / 4
+
+                        print("wnik")
+                        # atom.Rect.x = int(pozycja_x[i])
+                        # atom.Rect.y = int(pozycja_y[i])
+
+                        atom2.x -= atom2.speed_x / 4
+                        atom2.y -= atom2.speed_y / 4
+                        # atom2.Rect.x = int(pozycja_x[j])
+                        # atom2.Rect.y = int(pozycja_y[j])
+
+                    if i == 0 or j == 0:
+                        pos2 = (atomy[0].x, atomy[0].y)
+
+                        # sprawdzanie czy czerwony atom się przesunąl i oblizanie o ile
+
+                        if pos1 != pos2:
+                            odl = math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
+                        else:
+                            odl = 0
+
+                    # Odbicie
+                    if s < atom.dystans(atom2) <= s + tol and (i != odbicia[j] or j != odbicia[i]):
+                        if i == 0 or j == 0:
+                            lambdy.append(
+                                math.sqrt((time * atomy[0].speed_x) ** 2 + (time * atomy[0].speed_y) ** 2) - odl)
+                            print(i, j)
+
+                            time = 0
+                        atom1 = atomy[j]
+                        odbicia[i] = j
+                        odbicia[j] = i
+                        xs = atom.x
+                        ys = atom.y
+                        xs1 = atom1.x
+                        ys1 = atom1.y
+                        tupl = (xs - xs1,  # (r1 - r2)
+                                ys - ys1)
+
+                        tupl2 = (xs1 - xs,  # (r2 - r1)
+                                 ys1 - ys)
+
+                        d = (tupl[0] ** 2) + (tupl[1] ** 2)
+
+                        dot1 = ((atom.speed_x - atom1.speed_x) * tupl[0] + (
+                                atom.speed_y - atom1.speed_y) * tupl[1]) / d  # (dot/d)
+
+                        dot2 = ((atom1.speed_x - atom.speed_x) * tupl2[0] + (  # drugi atom
+                                atom1.speed_y - atom.speed_y) * tupl2[1]) / d
+
+                        x1 = dot1 * tupl[0]
+                        y1 = dot1 * tupl[1]
+                        x2 = dot2 * tupl2[0]
+                        y2 = dot2 * tupl2[1]
+
+                        atom.speed_x -= x1
+                        atom.speed_y -= y1
+                        atom1.speed_x -= x2
+                        atom1.speed_y -= y2
+                atom = atomy[i]
+                if atom.x - atom.r < 0:
+                    atomy[i].x = atom.r
+                    atom.speed_x *= -1
+                    # print(atomy[i].speed_x)
+                    odbicia[i] = -1
+                elif atom.x + atom.r > L:
+                    atomy[i].x = L - atom.r
+                    # print("pyk róg")
+                    atomy[i].speed_x *= -1
+                    odbicia[i] = -1
+                elif atom.y - atom.r < 0:
+                    # print("pyk odbicie")
+                    atomy[i].y = atom.r
+                    atomy[i].speed_y *= -1
+                    odbicia[i] = -1
+                elif atom.y + atom.r > H:
+                    print(H)
+                    atomy[i].y = H - atom.r
+                    atomy[i].speed_y *= -1
+                    odbicia[i] = -1
+
+            for i in range(len(atomy)):
+                atomy[i].move(krok_czasu)
+            screen.fill((100, 100, 100))  # zmienia kolor tła okna
+            for atom in atomy:
+                #print(atom.x, atom.y)
+                pygame.draw.circle(screen,atom.col,(int(atom.x),int(atom.y)), int(atom.r))
+
+            # rysowanie menu
+            #rys_menu(screen)
+            pygame.display.update()
+
+        else:
+            screen.fill((100, 100, 100))  # zmienia kolor tła okna
+            pos = pygame.mouse.get_pos()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # wyście iksem z okienka konczy program
+                    f = open(nazwa, 'a')
+                    f.write(str(len(lambdy)))
+                    f.write(" ")
+                    f.write(str(sum(lambdy)))
+                    f.write(" ")
+                    if (len(lambdy)>0):
+                        f.write(str(sum(lambdy) / len(lambdy)))
+                    else:
+                        f.write("0")
+                    f.write(" ")
+                    f.write(str(len(lambdy) / (M * krok_czasu)))
+                    f.write("\n")
+
+                    f.close()
+                    pygame.quit()
+                    sys.exit()
+
+            font = pygame.font.SysFont("ebrima", 20)
+            text1 = font.render(f"Liczba zderzeń: {len(lambdy)}", False, (0, 0, 0))
+            text2 = font.render(f"Przebyta droga: {sum(lambdy)}", False, (0, 0, 0))
+            if (len(lambdy) > 0):
+                text3 = font.render(f"Średnia droga między zderzeniami: {sum(lambdy) / len(lambdy)}", False, (0, 0, 0))
+            else:
+                text3 = font.render("0",False, (0, 0, 0))
+            text4 = font.render(f"Częstość zderzeń: {len(lambdy) / (M * krok_czasu)}", False, (0, 0, 0))
+            screen.blit(text1, (0, 0))
+            screen.blit(text2, (0, 20))
+            screen.blit(text3, (0, 40))
+            screen.blit(text4, (0, 60))
+
+            pygame.display.flip()
 
 
-# Pętla programu
-while True:
-    screen.fill((100, 100, 100))  # zmienia kolor tła okna
-    pos = pygame.mouse.get_pos()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # wyście iksem z okienka konczy program
-            pygame.quit()
-            sys.exit()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if jedenminus.mouse_over_button(pos) and etaH > 20:
-                etaH -= 1
-                H = etaH * R
-                screen = pygame.display.set_mode((L, H + 40))
-                jeden.caption = "etaH: " + str(etaH)
-            elif jedenplus.mouse_over_button(pos) and etaH < 40:
-                etaH += 1
-                H = etaH * R
-                screen = pygame.display.set_mode((L, H + 40))
-                jeden.caption = "etaH: " + str(etaH)
-            elif dwaplus.mouse_over_button(pos) and etaL < 40:
-                etaL += 1
-                L = etaL * R
-                panel.rect.width = L
-                screen = pygame.display.set_mode((L, H))
-                dwa.caption = "etaL: " + str(etaL)
-            elif dwaminus.mouse_over_button(pos) and etaL > 20:
-                etaL -= 1
-                L = etaL * R
-                screen = pygame.display.set_mode((L, H))
-                panel.rect.width = L
-                dwa.caption = "etaL: " + str(etaL)
-            elif czasowyminus.mouse_over_button(pos) and krok_czasu >= 10:
-                krok_czasu -= 10
-                czasowy.caption = "γt: " + str(krok_czasu)
-            elif czasowyplus.mouse_over_button(pos):
-                krok_czasu += 10
-                czasowy.caption = "γt: " + str(krok_czasu)
-            elif nowy_atom_plus.mouse_over_button(pos) and len(atomy) < (etaH * etaL / 4):
-                dodaj(L, H, R, vGen)
-
-                nowy_atom.caption = f"Atomy: {len(atomy)} "
-            elif nowy_atom_minus.mouse_over_button(pos) and atomy:
-                atomy.pop()
-                pozycja_y.pop()
-                pozycja_x.pop()
-                odbicia.pop()
-                nowy_atom.caption = f"Atomy: {len(atomy)} "
-
-        elif event.type == pygame.VIDEORESIZE:
-            L = event.w
-            H = event.h
-            panel.rect.width = L
-            screen = pygame.display.set_mode(
-                (event.w, event.h), pygame.RESIZABLE)
-
-    # rysowanie menu
-    rys_menu(screen)
-
-    # poruszanie atomami
-    ruch(screen, L, H)
-
-    pygame.display.flip()  # wyświetla obiekty
-    czas.tick(krok_czasu)  # spowalnia, max 60 klatek na sekundę
+if __name__ == '__main__':
+    main()
