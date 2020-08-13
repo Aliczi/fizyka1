@@ -10,11 +10,12 @@ s = 2 * R  # średnica
 H = eta * R  # wysokość zbiornika
 L = eta * R  # szerokość zbiornika
 vGen = 5  # Prędkość
-d = R / 10  # tolerancja zderzenia'
+tol = R / 10  # tolerancja zderzenia'
 krok_czasu=vGen*20     #ile klatek na sekundę
 M=5                    #wartość M
-
-delta_t = M * krok_czasu
+ilosc = 45  #startowa ilosc atomow
+krok_czasu_startowy = (vGen * eta)
+nazwa_pliku = "M100A45.txt"
 
 
 pygame.init()
@@ -70,7 +71,7 @@ top_color=(128,0,64)
 top_color2=(148,20,84)
 hoverr=(108,0,24)
 
-a = Button(100, 150, 300, 30, top_color, "Liczba atomów: 45",hoverr)
+a = Button(100, 150, 300, 30, top_color, "Liczba atomów: ?",hoverr)
 am = Button(400, 150, 50, 30, top_color2, "-",hoverr)
 ap = Button(450, 150, 50, 30, top_color, "+",hoverr)
 
@@ -94,7 +95,7 @@ f = Button(50, 460, 500, 30, top_color, "Liczba zderzeń: ?", hoverr)
 g = Button(50, 500, 500, 30, top_color, "Przebyta droga: : ?", hoverr)
 h = Button(50, 540, 500, 30, top_color, "Średnia droga λ: ?", hoverr)
 i = Button(50, 580, 500, 30, top_color, "Ilość kolizji w czasie: ?", hoverr)
-
+zap = Button(50, 660, 500, 30, top_color, "Zapisz do pliku", hoverr)
 
 przyciski=[a,am,ap,b,bm,bp,c,cm,cp,dd,dm,dp,e,es,f,g,h,i]
 
@@ -122,112 +123,113 @@ def draw_setup(screen):
 """Mechanika ruchu"""
 
 class Atom():
-    def __init__(self, Rect, x, y, s, color):
-        self.Rect = Rect
-        self.speed_x = x
-        self.speed_y = y
-        self.x = Rect.center[0]
-        self.y = Rect.center[1]
+    def __init__(self, x, y, speed_x, speed_y, s, kolor):
+        self.speed_x = speed_x
+        self.speed_y = speed_y
+        self.x = x
+        self.y = y
 
         self.r = s / 2
-        self.col = color
+        self.col = kolor
+    def move(self, czas):
+        self.x += self.speed_x
+        self.y += self.speed_y
+
+    def dystans (self,atom2):
+        return (math.sqrt((atom2.x - self.x) ** 2 + (self.y - atom2.y) ** 2))
+
+
+    # odbicia od ścian
+    def sciana(self,top,bottom,left,right,i):
+
+        # górnej
+        if self.y - self.r <= top and self.speed_y < 0:
+            self.y = top + self.r
+            self.speed_y *= -1
+            odbicia[i] = -1
+
+        # dolnej
+        elif self.y + self.r >= bottom and self.speed_y > 0:
+            self.y = bottom - self.r
+            self.speed_y *= -1
+            odbicia[i] = -1
+
+        # lewej
+        elif self.x - self.r <= left and self.speed_x < 0:
+            self.x = left + self.r
+            self.speed_x *= -1
+            odbicia[i] = -1
+
+        # prawej
+        elif self.x + self.r >= right and self.speed_x > 0:
+            self.x = right - atomy[i].r
+            self.speed_x *= -1
+            odbicia[i] = -1
+
 
 
 atomy = []  # lista atomów
-pozycja_x = []
-pozycja_y = []
-odbicia=[-1]*len(atomy)
-
+odbicia=[]
 """________________________________Dodatkowy atom______________________________________"""
 time = 0
 lambdy = []
-czerwony = Atom(pygame.Rect(con_x, con_y, s, s), 3, 3, s, (255, 0, 0))
-atomy.append(czerwony)
-pozycja_x.append(con_x)
-pozycja_y.append(con_y)
+czerfony = Atom(con_x + R, con_y + R, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (255, 0, 0))
+atomy.append(czerfony)
 odbicia.append(-1)
 
 
 
 
 def dodaj(top,bottom,left,right, R, vGen):
-    xx = random.uniform(left, right - R )
-    yy = random.uniform(top, bottom - R )
-    atomy.append( Atom(pygame.Rect(xx, yy, 2 * R, 2 * R), random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), 2*R, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))))
+    i=len(atomy)
+    while i != 0:
+        xx = random.uniform(left, right - R)
+        yy = random.uniform(top, bottom - R)
+        i = len(atomy)
+        at = Atom(xx, yy, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (0, 0, 255))
+        for j in range(len(atomy)):
+            if (at.dystans(atomy[j])) <= s + tol:
+                break
 
-    pozycja_x.append(xx)
-    pozycja_y.append(yy)
+            i -= 1
+    print(at.x, at.y)
+    atomy.append(at)
     odbicia.append(-1)
 
 
-
 def dodaj_on_click(xx,yy, R, vGen):
-    atomy.append( Atom(pygame.Rect(xx+R, yy+R, 2 * R, 2 * R), random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), 2*R, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))))
+    atomy.append(Atom(xx, yy, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (0, 0, 255)))
 
-    pozycja_x.append(xx)
-    pozycja_y.append(yy)
     odbicia.append(-1)
 
 
 def usun():
     atomy.pop()
-    pozycja_x.pop()
-    pozycja_y.pop()
-    odbicia.append(-1)
+    odbicia.pop
 
-
-
-def kolizja(j, atomy):  # zwraca indeks pierwszego atomu z którym wykryje zdarzenie
-    atom = atomy[j]
-    for i in range(len(atomy)):
-        atom2 = atomy[i]
-        if 54 < math.sqrt((atom.Rect.x - atom2.Rect.x) ** 2 + (atom.Rect.y - atom2.Rect.y) ** 2) < 2 * atom.r + 3:
-            return i
-    return -1
 
 
 
 def ruch(screen,top,bottom,left,right):
     global time, lambdy
-    i = 0
-
-    # print(odbicia)
-    for atom in atomy:
-        # print(atom.col,atom.Rect.x,atom.Rect.y)
-        pozycja_x[i] += atom.speed_x
-        pozycja_y[i] += atom.speed_y
-        atom.Rect.x = int(pozycja_x[i])
-        atom.Rect.y = int(pozycja_y[i])
-        i += 1
 
 
-
-    # tablica = [0] * len(atomy)
-    pozx = pozycja_x
-    pozy = pozycja_y
     for i in range(len(atomy)):
-        atom = atomy[i]
         # KOLIZJE Z ATOMAMI
-        for j in range(len(atomy)):
-            atom2 = atomy[j]
+        for j in range(i + 1, len(atomy)):
+            wnik=False
+            if i == 0 or j == 0:
+                pos1 = (atomy[0].x, atomy[0].y)
             # sprawdzanie czy atomy w siebie "wniknęły" po przemieszczeniu, jeżeli tak to oddalają się od siebie
+            while s > atomy[i].dystans(atomy[j]):
+                atomy[i].x -= atomy[i].speed_x / 30
+                atomy[i].y -= atomy[i].speed_y / 30
+
+                atomy[j].x -= atomy[j].speed_x / 30
+                atomy[j].y -= atomy[j].speed_y / 30
+                wnik=True
             if i == 0 or j == 0:
-                pos1 = (pozycja_x[0], pozycja_y[0])
-
-            while s > (math.sqrt((pozx[j] - pozx[i]) ** 2 + (pozy[j] - pozy[i]) ** 2)) and i != j and i != odbicia[j]:
-                pozycja_x[i] -= atom.speed_x / 4
-                pozycja_y[i] -= atom.speed_y / 4
-                atom.Rect.x = int(pozycja_x[i])
-                atom.Rect.y = int(pozycja_y[i])
-
-
-                pozycja_x[j] -= atom2.speed_x / 4
-                pozycja_y[j] -= atom2.speed_y / 4
-                atom2.Rect.x = int(pozycja_x[j])
-                atom2.Rect.y = int(pozycja_y[j])
-
-            if i == 0 or j == 0:
-                pos2 = (pozycja_x[0], pozycja_y[0])
+                pos2 = (atomy[0].x, atomy[0].y)
 
                 # sprawdzanie czy czerwony atom się przesunąl i oblizanie o ile
 
@@ -237,71 +239,46 @@ def ruch(screen,top,bottom,left,right):
                     odl = 0
 
             # Odbicie
-            if s < (math.sqrt((pozx[j] - pozx[i]) ** 2 + (pozy[j] - pozy[i]) ** 2)) <= s + 3 and i != j and i != \
-                    odbicia[j]:
-                """____________________Liczenie przebytej drogi czerwonego atomu______________________"""
+            if s < (atomy[i].dystans(atomy[j]) <= s + tol and (i != odbicia[j] or j != odbicia[i])) or wnik == True:
                 if i == 0 or j == 0:
-                    lambdy.append(math.sqrt((time * atomy[0].speed_x) ** 2 + (time * atomy[0].speed_y) ** 2) - odl)
+                    lambdy.append(
+                        math.sqrt((time * atomy[0].speed_x) ** 2 + (time * atomy[0].speed_y) ** 2) - odl)
+                    print(i, j)
+
                     time = 0
-
-                atom1 = atomy[j]
-                odbicia[j] = i
                 odbicia[i] = j
+                odbicia[j] = i
+                xs = atomy[i].x
+                ys = atomy[i].y
+                xs1 = atomy[j].x
+                ys1 = atomy[j].y
+                tupl = (xs - xs1,  # (r1 - r2)
+                        ys - ys1)
 
-                xs = pozycja_x[i]
-                ys = pozycja_y[i]
-                xs1 = pozycja_x[j]
-                ys1 = pozycja_y[j]
-                n = [None, None]
-                t = [None, None]
-                n[0] = (xs1 - xs) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
-                n[1] = (ys1 - ys) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
-                t[0] = (-1.0 * (ys1 - ys)) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
-                t[1] = (xs1 - xs) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
-                v1 = [atom.speed_x, atom.speed_y]
-                v2 = [atom1.speed_x, atom1.speed_y]
-                vn1 = vt1 = vn2 = vt2 = 0
-                for i in range(2):
-                    vn1 += v1[i] * n[i]
-                    vt1 += v1[i] * t[i]
-                    vn2 += v2[i] * n[i]
-                    vt2 += v2[i] * t[i]
-                vn1, vn2 = vn2, vn1
-                v1[0], v1[1], v2[0], v2[1] = vn1 * n[0] + vt1 * t[0], vn1 * n[1] + \
-                                             vt1 * t[1], vn2 * n[0] + vt2 * t[0], vn2 * n[1] + vt2 * t[1]
-                atom.speed_x, atom.speed_y, atom1.speed_x, atom1.speed_y = v1[0], v1[1], v2[0], v2[1]
+                tupl2 = (xs1 - xs,  # (r2 - r1)
+                         ys1 - ys)
 
+                d = (tupl[0] ** 2) + (tupl[1] ** 2)
 
-    #odbicia od ścian
-        #górnej
-        if atom.Rect.centery - atom.r <= top and atom.speed_y < 0:
-            atomy[i].Rect.y = top
-            pozycja_y[i]=top
-            atom.speed_y *= -1
-            odbicia[i] = -1
+                dot1 = ((atomy[i].speed_x - atomy[j].speed_x) * tupl[0] + (
+                        atomy[i].speed_y - atomy[j].speed_y) * tupl[1]) / d  # (dot/d)
 
-        #dolnej
-        elif atom.Rect.centery + atom.r >= bottom and atom.speed_y > 0:
-            atomy[i].Rect.y = bottom - atom.r * 2
-            pozycja_y[i] = bottom - atom.r * 2
-            atomy[i].speed_y *= -1
-            odbicia[i] = -1
+                dot2 = ((atomy[j].speed_x - atomy[i].speed_x) * tupl2[0] + (  # drugi atom
+                        atomy[j].speed_y - atomy[i].speed_y) * tupl2[1]) / d
 
-        #lewej
-        elif atom.Rect.centerx - atom.r <= left and atom.speed_x < 0:
-            atomy[i].Rect.x = left
-            pozycja_x[i] = left
-            atomy[i].speed_x *= -1
-            odbicia[i] = -1
+                x1 = dot1 * tupl[0]
+                y1 = dot1 * tupl[1]
+                x2 = dot2 * tupl2[0]
+                y2 = dot2 * tupl2[1]
 
-        #prawej
-        elif atom.Rect.centerx + atom.r >= right and atom.speed_x > 0:
-            atomy[i].Rect.x = right - atom.r * 2
-            pozycja_x[i] = right - atom.r * 2
-            atomy[i].speed_x *= -1
-            odbicia[i] = -1
+                atomy[i].speed_x -= x1
+                atomy[i].speed_y -= y1
+                atomy[j].speed_x -= x2
+                atomy[j].speed_y -= y2
 
-        pygame.draw.ellipse(screen, atom.col, atom.Rect)
+        atomy[i].sciana(top,bottom,left,right,i)
+        atomy[i].move(krok_czasu)
+        pygame.draw.circle(screen, atomy[i].col, (int(atomy[i].x), int(atomy[i].y)), int(atomy[i].r))
 
 
 
@@ -309,9 +286,9 @@ def ruch(screen,top,bottom,left,right):
 pomiar = False
 
 
-for _ in range(45):
+for _ in range(ilosc):
     dodaj(con_y, con_y + H, con_x, con_x + L, R, vGen)
-
+a.caption = f"Liczba atomów: {len(atomy)}"
 
 # Pętla programu
 while True:
@@ -379,7 +356,21 @@ while True:
                 g.caption = f"Przebyta droga: 0"
                 h.caption = f"Średnia droga λ: 0"
                 i.caption = f"Częstość zderzeń: 0"
+            elif zap.mouse_over_button(pos):
+                pl = open(nazwa_pliku, 'a')
+                pl.write(str(odb))
+                pl.write(" ")
+                pl.write(str(droga))
+                pl.write(" ")
+                if (len(lambdy) > 0):
+                    pl.write(str(srednia))
+                else:
+                    pl.write("0")
+                pl.write(" ")
+                pl.write(str(czestosc))
+                pl.write("\n")
 
+                pl.close()
 
         elif event.type == pygame.MOUSEMOTION:
             for przycisk in przyciski:
@@ -405,12 +396,13 @@ while True:
         es.caption = f"{delta_t//60}:{delta_t%60}"
         if delta_t < 0:
             f.caption = f"Liczba zderzeń: {len(lambdy)}"
+            odb=len(lambdy)
             g.caption = f"Przebyta droga: {round(sum(lambdy),4)}"
+            droga = round(sum(lambdy),4)
             h.caption = f"Średnia droga λ: {round(sum(lambdy)/len(lambdy),4)}"
+            srednia = round(sum(lambdy)/len(lambdy),4)
             i.caption = f"Częstość zderzeń: {round(len(lambdy)/(M * krok_czasu),4)}"
+            czestosc = round(len(lambdy)/(M * krok_czasu),4)
             pomiar = False
             es.caption = "Start"
-
-
-
-
+            przyciski.append(zap)
