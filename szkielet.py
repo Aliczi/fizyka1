@@ -128,6 +128,7 @@ class Atom():
         self.speed_y = speed_y
         self.x = x
         self.y = y
+        self.odbicia = -1
 
         self.r = s / 2
         self.col = kolor
@@ -146,36 +147,36 @@ class Atom():
         if self.y - self.r <= top and self.speed_y < 0:
             self.y = top + self.r
             self.speed_y *= -1
-            odbicia[i] = -1
+            self.odbicia = -1
 
         # dolnej
         elif self.y + self.r >= bottom and self.speed_y > 0:
             self.y = bottom - self.r
             self.speed_y *= -1
-            odbicia[i] = -1
+            self.odbicia = -1
 
         # lewej
         elif self.x - self.r <= left and self.speed_x < 0:
             self.x = left + self.r
             self.speed_x *= -1
-            odbicia[i] = -1
+            self.odbicia = -1
 
         # prawej
         elif self.x + self.r >= right and self.speed_x > 0:
             self.x = right - atomy[i].r
             self.speed_x *= -1
-            odbicia[i] = -1
+            self.odbicia = -1
 
 
 
 atomy = []  # lista atomów
-odbicia=[]
+
 """________________________________Dodatkowy atom______________________________________"""
 time = 0
 lambdy = []
 czerfony = Atom(con_x + R, con_y + R, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (255, 0, 0))
 atomy.append(czerfony)
-odbicia.append(-1)
+
 
 
 
@@ -192,20 +193,17 @@ def dodaj(top,bottom,left,right, R, vGen):
                 break
 
             i -= 1
-    print(at.x, at.y)
+
     atomy.append(at)
-    odbicia.append(-1)
+
 
 
 def dodaj_on_click(xx,yy, R, vGen):
     atomy.append(Atom(xx, yy, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (0, 0, 255)))
 
-    odbicia.append(-1)
-
 
 def usun():
     atomy.pop()
-    odbicia.pop
 
 
 
@@ -239,15 +237,16 @@ def ruch(screen,top,bottom,left,right):
                     odl = 0
 
             # Odbicie
-            if s < (atomy[i].dystans(atomy[j]) <= s + tol and (i != odbicia[j] or j != odbicia[i])) or wnik == True:
+            if s < (atomy[i].dystans(atomy[j]) <= s + tol and (i != atomy[j].odbicia or j != atomy[i].odbicia)) or wnik == True:
                 if i == 0 or j == 0:
                     lambdy.append(
                         math.sqrt((time * atomy[0].speed_x) ** 2 + (time * atomy[0].speed_y) ** 2) - odl)
-                    print(i, j)
+
 
                     time = 0
-                odbicia[i] = j
-                odbicia[j] = i
+
+                atomy[i].odbicia = j
+                atomy[j].odbicia = i
                 xs = atomy[i].x
                 ys = atomy[i].y
                 xs1 = atomy[j].x
