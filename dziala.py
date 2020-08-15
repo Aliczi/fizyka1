@@ -1,128 +1,96 @@
 import pygame
 import sys
-import os
 import math
 import random
 
 
+
+
+
+
+
 """     Założenia projektu      """
 
-eta = 20  # Warunek minimalnego rozmiaru zbiornika: nH, nL >= 20
-# max 75 min 20
+etaH =   25  # Warunek minimalnego rozmiaru zbiornika: nH, nL >= 20
+etaL = 25
 R = 30  # promień R
 s = 2 * R  # średnica
-H = eta * R  # wysokość zbiornika
-L = eta * R  # szerokość zbiornika
-vGen = 5  # Prędkość
+vGen = 1 # Prędkość
 tol = R / 10  # tolerancja zderzenia'
-krok_czasu = 60  # ile klatek na sekundę
-M = 5  # wartość M
-ilosc = 20  # startowa ilosc atomow
-krok_czasu_startowy = (vGen * eta)
-nazwa_pliku = "M100A45.txt"
+M = 100
+time = 0
+lambdy = []
+H = etaH * R  # wysokość zbiornika
+L = etaL * R  # szerokość zbiornika
+ilosc=60 #ilosc atomow
+krok_czasu_startowy = (vGen * min(etaH, etaL))
+krok_czasu = krok_czasu_startowy
+delta_t = M * krok_czasu
+nazwa = "M100A45.txt"
+"""_________________________________________________________"""
 
 
-pygame.init()
-czas = pygame.time.Clock()
-os.environ['SDL_VIDEO_CENTERED'] = '1'
-
-screen = pygame.display.set_mode((1480, 780), pygame.RESIZABLE)
-pygame.display.set_caption("Symulacja atomów")
-
-
-# ________________________________________________________________________________________________________
 class Button():
 
-    def __init__(self, x, y, width, height, color=(0, 0, 0), caption='', hover_color=''):
-        self.x = x
-        self.y = y
-        self.caption = caption
-        self.width = width
-        self.height = height
-
-        self.text_color = (0, 0, 0)
+    def __init__(self, x, y, width, height, color=(0, 0, 0), caption="Nowy przycisk"):
+        self.rect = pygame.Rect(x, y, width, height)
         self.color = color
-        self.back_color = color
-        self.hover_color = hover_color
+        self.caption = caption
 
     def draw(self, screen):
+        font = pygame.font.SysFont("ebrima", 20)
+        text = font.render(self.caption, 1, (0, 0, 0))
 
-        pygame.draw.rect(screen, self.back_color,
-                         (self.x, self.y, self.width, self.height))
-
-        if self.caption != '':
-            font = pygame.font.SysFont(
-                "sitkasmallsitkatextitalicsitkasubheadingitalicsitkaheadingitalicsitkadisplayitalicsitkabanneritalic", 20)
-            text = font.render(
-                self.caption, 1, self.text_color, self.back_color)
-            screen.blit(text, (self.x + (self.width / 2 - text.get_width() / 2),
-                               self.y + (self.height / 2 - text.get_height() / 2)))
+        pygame.draw.rect(screen, self.color, self.rect)
+        screen.blit(text, self.rect)
 
     def mouse_over_button(self, pos):
-        if pos[0] > self.x and pos[0] < self.x + self.width and pos[1] < self.y + self.height and pos[1] > self.y:
-            self.back_color = self.hover_color
-            self.text_color = (255, 255, 255)
-            return True
-        else:
-            self.back_color = self.color
-            self.text_color = (0, 0, 0)
-            return False
+        if pos[0] < self.rect.x + self.rect.width and pos[0] > self.rect.x:
+            if pos[1] < self.rect.y + self.rect.height and pos[1] > self.rect.y:
+                return True
+        return False
 
 
-# Button(pozycjax,pozycjay, szerokość, wysokość, kolor, napis, hover kolor)
-top_color = (128, 0, 64)
-top_color2 = (148, 20, 84)
-hoverr = (108, 0, 24)
+przyciski = []
 
-a = Button(100, 150, 300, 30, top_color, "Liczba atomów: ?", hoverr)
-am = Button(400, 150, 50, 30, top_color2, "-", hoverr)
-ap = Button(450, 150, 50, 30, top_color, "+", hoverr)
+panel = Button(0, 0, 500, 40, (200, 200, 200))
+przyciski.append(panel)
 
-b = Button(100, 200, 300, 30, top_color, "Rozmiar zbiornika η: 40", hoverr)
-bm = Button(400, 200, 50, 30, top_color2, "-", hoverr)
-bp = Button(450, 200, 50, 30, top_color, "+", hoverr)
+jeden = Button(0, 0, 80, 40, (200, 200, 200), " etaH: 20")
+przyciski.append(jeden)
+jedenplus = Button(100, 0, 20, 40, (0, 200, 200), "+")
+przyciski.append(jedenplus)
+jedenminus = Button(80, 0, 20, 40, (200, 200, 0), " -")
+przyciski.append(jedenminus)
 
-c = Button(100, 250, 300, 30, top_color, "Krok czasu δt: 100", hoverr)
-cm = Button(400, 250, 50, 30, top_color2, "-", hoverr)
-cp = Button(450, 250, 50, 30, top_color, "+", hoverr)
+dwa = Button(120, 0, 80, 40, (200, 200, 200), " etaL: 20")
+przyciski.append(dwa)
+dwaplus = Button(220, 0, 20, 40, (0, 200, 200), "+")
+przyciski.append(dwaplus)
+dwaminus = Button(200, 0, 20, 40, (200, 200, 0), " -")
+przyciski.append(dwaminus)
 
-dd = Button(100, 300, 300, 30, top_color, "Wartość M: 5", hoverr)
-dm = Button(400, 300, 50, 30, top_color2, "-", hoverr)
-dp = Button(450, 300, 50, 30, top_color, "+", hoverr)
+czasowy = Button(240, 0, 80, 40, (200, 200, 200), "")
+przyciski.append(czasowy)
+czasowyplus = Button(340, 0, 20, 40, (0, 200, 200), "+")
+przyciski.append(czasowyplus)
+czasowyminus = Button(320, 0, 20, 40, (200, 200, 0), " -")
+przyciski.append(czasowyminus)
 
-e = Button(100, 400, 300, 30, top_color, "Dokonaj pomiaru -> ", hoverr)
-es = Button(400, 400, 100, 30, top_color2, "Start", hoverr)
-
-
-f = Button(50, 460, 500, 30, top_color, "Liczba zderzeń: ?", hoverr)
-g = Button(50, 500, 500, 30, top_color, "Przebyta droga: : ?", hoverr)
-h = Button(50, 540, 500, 30, top_color, "Średnia droga λ: ?", hoverr)
-i = Button(50, 580, 500, 30, top_color, "Ilość kolizji w czasie: ?", hoverr)
-zap = Button(50, 660, 500, 30, top_color, "Zapisz do pliku", hoverr)
-
-przyciski = [a, am, ap, b, bm, bp, c, cm, cp, dd, dm, dp, e, es, f, g, h, i]
-
-# Zbiornik
-con_x, con_y = 830, 190
-frame = pygame.Rect(con_x - 8, con_y - 8, H + 16, L + 16)
-container = pygame.Rect(con_x, con_y, H, L)
-
-# tlo=pygame.image.load(os.path.join('wzory2.jpg')).convert_alpha()
-# tlo = pygame.transform.scale(tlo,(1480,780))
-RosyBrown = (188, 143, 143)
-Maroon = (128, 0, 64)
+nowy_atom = Button(360, 0, 100, 40, (200, 200, 200), "")
+przyciski.append(nowy_atom)
+nowy_atom_plus = Button(480, 0, 20, 40, (0, 200, 200), "+")
+przyciski.append(nowy_atom_plus)
+nowy_atom_minus = Button(460, 0, 20, 40, (200, 200, 0), " -")
+przyciski.append(nowy_atom_minus)
 
 
-def draw_setup(screen):
-    screen.fill((155, 100, 100))  # zmienia kolor tła okna
-    # screen.blit(tlo, (0, 0))
-    pygame.draw.rect(screen, Maroon, frame)
-    pygame.draw.rect(screen, RosyBrown, container)
+def rys_menu(screen):
     for el in przyciski:
         el.draw(screen)
 
 
-"""Mechanika ruchu"""
+"""__________________________________________________________________"""
 
 
 class Atom():
@@ -131,7 +99,6 @@ class Atom():
         self.speed_y = speed_y
         self.x = x
         self.y = y
-        self.odbicia = -1
 
         self.r = s / 2
         self.col = kolor
@@ -140,76 +107,83 @@ class Atom():
         self.x += self.speed_x
         self.y += self.speed_y
 
-    def dystans(self, atom2):
+    def dystans (self,atom2):
         return (math.sqrt((atom2.x - self.x) ** 2 + (self.y - atom2.y) ** 2))
-
-    # odbicia od ścian
-    def sciana(self, top, bottom, left, right, i):
-
-        # górnej
-        if self.y - self.r <= top and self.speed_y < 0:
-            self.y = top + self.r
-            self.speed_y *= -1
-            self.odbicia = -1
-
-        # dolnej
-        elif self.y + self.r >= bottom and self.speed_y > 0:
-            self.y = bottom - self.r
-            self.speed_y *= -1
-            self.odbicia = -1
-
-        # lewej
-        elif self.x - self.r <= left and self.speed_x < 0:
-            self.x = left + self.r
-            self.speed_x *= -1
-            self.odbicia = -1
-
-        # prawej
-        elif self.x + self.r >= right and self.speed_x > 0:
-            self.x = right - atomy[i].r
-            self.speed_x *= -1
-            self.odbicia = -1
 
 
 atomy = []  # lista atomów
 
+def dodaj(L, H, R, vGen, atomy,z):
+    print(H)
+    for g in range(z):
+        i=7
+        while i != 0:
+            xx = int(random.randrange(0.0 + R, L -  R))
+            yy = int(random.randrange(0.0 + R, H - R))
+            i = len(atomy)
+            at = Atom(xx, yy, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (0, 0, 255))
+            for j in range(len(atomy)):
+                if (at.dystans(atomy[j])) <= s + tol:
+                    break
+
+                i -= 1
+        print(at.x, at.y)
+        atomy.append(at)
+        odbicia.append(-1)
+
+
+s = R*2  # średnica
+
 """________________________________Dodatkowy atom______________________________________"""
 time = 0
 lambdy = []
-czerfony = Atom(con_x + R, con_y + R, random.uniform(-1.0 * vGen,
-                                                     vGen), random.uniform(-1.0 * vGen, vGen), s, (255, 0, 0))
+czerfony = Atom(R, R, random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen), s, (255, 0, 0))
 atomy.append(czerfony)
 
+"""________________________________Testowy zestaw atomów______________________________________"""
 
-def dodaj(top, bottom, left, right, R, vGen):
-    i = len(atomy)
-    while i != 0:
-        xx = random.uniform(left, right - R)
-        yy = random.uniform(top, bottom - R)
-        i = len(atomy)
-        at = Atom(xx, yy, random.uniform(-1.0 * vGen, vGen),
-                  random.uniform(-1.0 * vGen, vGen), s, (0, 0, 255))
-        for j in range(len(atomy)):
-            if (at.dystans(atomy[j])) <= s + tol:
-                break
+# atom0 = Atom(200,200, -vGen, -vGen, s, (100, 100, 250))
+# atomy.append(atom0)
+# atom1 = Atom(100,100, vGen, vGen, s, (250, 100, 100))
+# atomy.append(atom1)
+#
+# atom2 = Atom(360,360, -vGen, -vGen, s, (255, 255, 255))
+# atomy.append(atom2)
+# atom3 = Atom(350,290, vGen, -vGen, s, (0, 0, 0))
+# atomy.append(atom3)
+#
+# # set3    prawo lewo
+# atom4 = Atom(70,430, vGen, 0, s, (50, 150, 100))
+# atomy.append(atom4)
+# atom5 = Atom(200,430, -vGen, 0, s, (250, 250, 100))
+# atomy.append(atom5)
+# #
+# # set4              góra dół
+# atom6 = Atom(80,200, 0, vGen, s, (250, 100, 250))
+# atomy.append(atom6)
+# atom7 = Atom(80,360, 0, -vGen, s, (100, 250, 250))
+# atomy.append(atom7)
 
-            i -= 1
+#test
+# obiekt6 = pygame.Rect(80, 310, s, s)
+# atom6 = Atom(obiekt6, 0, vGen, s, (250, 100, 250))
+# atomy.append(atom6)
+# obiekt7 = pygame.Rect(80, 370, s, s)
+# atom7 = Atom(obiekt7, 0, -3, s, (100, 250, 250))
+# atomy.append(atom7)
+#
+# obiekt4 = pygame.Rect(80, 435, s, s)
+# atom4 = Atom(obiekt4, 0, -3, s, (50, 150, 100))
+# atomy.append(atom4)
+# obie5 = pygame.Rect(80, 430, s, s)
+# atom5 = Atom(obie5, -vGen, 0, s, (250, 250, 100))
+# atomy.append(atom5)
 
-    atomy.append(at)
 
 
-def dodaj_on_click(xx, yy, R, vGen):
-    atomy.append(Atom(xx, yy, random.uniform(-1.0 * vGen, vGen),
-                      random.uniform(-1.0 * vGen, vGen), s, (0, 0, 255)))
-
-
-def usun():
-    atomy.pop()
-
-
-def ruch(screen, top, bottom, left, right):
-    global time, lambdy
-
+def ruch():
+    global etaH, etaL, R, s, H, L, vGen, tol, M, atomy, lamby, time, ilosc, krok_czasu_startowy, krok_czasu, delta_t, nazwa
+    # poruszanie atomami
     for i in range(len(atomy)):
         atomy[i].move(krok_czasu)
     for i in range(len(atomy)):
@@ -218,16 +192,16 @@ def ruch(screen, top, bottom, left, right):
             if i == 0 or j == 0:
                 pos1 = (atomy[0].x, atomy[0].y)
             # sprawdzanie czy atomy w siebie "wniknęły" po przemieszczeniu, jeżeli tak to oddalają się od siebie
-            while s > atomy[i].dystans(atomy[j]) and i != j and (i != atomy[j].odbicia or j != atomy[i].odbicia):
-                atomy[i].x -= (atomy[i].speed_x / 4)
-                atomy[i].y -= (atomy[i].speed_y / 4)
+            while s > atomy[i].dystans(atomy[j]) and i != j and (i!= odbicia[j] or j != odbicia[i]):
+                atomy[i].x -= (atomy[i].speed_x / 20)
+                atomy[i].y -= (atomy[i].speed_y / 20)
 
                 print("wnik")
                 # atom.Rect.x = int(pozycja_x[i])
                 # atom.Rect.y = int(pozycja_y[i])
 
-                atomy[j].x -= (atomy[j].speed_x / 4)
-                atomy[j].y -= (atomy[j].speed_y / 4)
+                atomy[j].x -= (atomy[j].speed_x / 20)
+                atomy[j].y -= (atomy[j].speed_y / 20)
                 # atom2.Rect.x = int(pozycja_x[j])
                 # atom2.Rect.y = int(pozycja_y[j])
 
@@ -237,21 +211,20 @@ def ruch(screen, top, bottom, left, right):
                 # sprawdzanie czy czerwony atom się przesunąl i oblizanie o ile
 
                 if pos1 != pos2:
-                    odl = math.sqrt((pos1[0] - pos2[0]) **
-                                    2 + (pos1[1] - pos2[1]) ** 2)
+                    odl = math.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
                 else:
                     odl = 0
 
             # Odbicie
-            if s < atomy[i].dystans(atomy[j]) <= s + tol and (i != atomy[j].odbicia or j != atomy[i].odbicia):
+            if s < atomy[i].dystans(atomy[j]) <= s + tol and (i != odbicia[j] or j != odbicia[i]):
                 if i == 0 or j == 0:
                     lambdy.append(
                         math.sqrt((time * atomy[0].speed_x) ** 2 + (time * atomy[0].speed_y) ** 2) - odl)
                     print(i, j)
 
                     time = 0
-                atomy[i].odbicia = j
-                atomy[j].odbicia = i
+                odbicia[i] = j
+                odbicia[j] = i
                 xs = atomy[i].x
                 ys = atomy[i].y
                 xs1 = atomy[j].x
@@ -279,128 +252,105 @@ def ruch(screen, top, bottom, left, right):
                 atomy[i].speed_y -= y1
                 atomy[j].speed_x -= x2
                 atomy[j].speed_y -= y2
+        if atomy[i].x - atomy[i].r < 0:
+            atomy[i].x = atomy[i].r
+            atomy[i].speed_x *= -1
+            # print(atomy[i].speed_x)
+            odbicia[i] = -1
+        elif atomy[i].x + atomy[i].r > L:
+            atomy[i].x = L - atom.r
+            # print("pyk róg")
+            atomy[i].speed_x *= -1
+            odbicia[i] = -1
+        elif atomy[i].y - atomy[i].r < 0:
+            # print("pyk odbicie")
+            atomy[i].y = atomy[i].r
+            atomy[i].speed_y *= -1
+            odbicia[i] = -1
+        elif atomy[i].y + atomy[i].r > H:
+            atomy[i].y = H - atom.r
+            atomy[i].speed_y *= -1
+            odbicia[i] = -1
 
-        atomy[i].sciana(top, bottom, left, right, i)
-        pygame.draw.circle(screen, atomy[i].col, (int(
-            atomy[i].x), int(atomy[i].y)), int(atomy[i].r))
 
 
-pomiar = False
+"""__________________________________________________________________________________________________________________________________"""
 
 
-for _ in range(ilosc):
-    dodaj(con_y, con_y + H, con_x, con_x + L, R, vGen)
-a.caption = f"Liczba atomów: {len(atomy)}"
+# zwraca indeks pierwszego atomu z którym wykryje zdarzenie
+
+odbicia = [-1] * len(atomy)
+
+"""_________________________________________________________________"""
+
+
+
+screen = pygame.display.set_mode((L, H), pygame.RESIZABLE)
+
+pygame.display.set_caption("Symulacja atomów")
+pygame.init()
+czasowy.caption = f" γt = {krok_czasu_startowy}"
+nowy_atom.caption = f"Atomy: {len(atomy)} "
+czas = pygame.time.Clock()
+dodaj(L , H , R , vGen, atomy,ilosc)
 
 # Pętla programu
 while True:
-    draw_setup(screen)
-    pos = pygame.mouse.get_pos()
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # wyście iksem z okienka konczy program
-            pygame.quit()
-            sys.exit()
-
-        # klikanie
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            # dodaj atom
-            if ap.mouse_over_button(pos) and len(atomy) < (eta * eta / 4):
-                dodaj(con_y, con_y + H, con_x, con_x + L, R, vGen)
-                a.caption = f"Liczba atomów: {len(atomy)}"
-            elif am.mouse_over_button(pos) and atomy:
-                usun()
-                a.caption = f"Liczba atomów: {len(atomy)}"
-            elif pos[0] > con_x and pos[0] < con_x + L and pos[1] > con_y and pos[1] < con_y + H:
-                dodaj_on_click(pos[0], pos[1], R, vGen)
-                a.caption = f"Liczba atomów: {len(atomy)}"
-            # zmiana rozmiaru zbiornika
-            elif bm.mouse_over_button(pos) and eta > 20:
-                eta -= 5
-                H = eta * R
-                L = eta * R
-                con_x += R / 2 * 5
-                con_y += R / 2 * 5
-                container = pygame.Rect(con_x, con_y, H, L)
-                frame = pygame.Rect(con_x - 5, con_y - 5, H + 10, L + 10)
-                b.caption = f"Rozmiar zbiornika η: {eta}"
-            elif bp.mouse_over_button(pos) and eta < 75:
-                eta += 5
-                H = eta * R
-                L = eta * R
-                con_x -= R / 2 * 5
-                con_y -= R / 2 * 5
-                container = pygame.Rect(con_x, con_y, H, L)
-                frame = pygame.Rect(con_x - 5, con_y - 5, H + 10, L + 10)
-                b.caption = f"Rozmiar zbiornika η: {eta}"
-            # zmiana kroku czasu
-            elif cm.mouse_over_button(pos) and krok_czasu >= 10:
-                krok_czasu -= 10
-                c.caption = f"Krok czasu δt: {krok_czasu}"
-            elif cp.mouse_over_button(pos):
-                krok_czasu += 10
-                c.caption = f"Krok czasu δt: {krok_czasu}"
-            # zmiana wartości M
-            elif dm.mouse_over_button(pos) and M > 10:
-                M -= 10
-                dd.caption = f"Wartość M: {M}"
-            elif dp.mouse_over_button(pos):
-                M += 10
-                dd.caption = f"Wartość M: {M}"
-            elif es.mouse_over_button(pos):
-                pomiar = True
-                es.caption = "Czekaj"
-                delta_t = M * krok_czasu
-                lambdy = []
-                time = 0
-                f.caption = f"Liczba zderzeń : 0"
-                g.caption = f"Przebyta droga: 0"
-                h.caption = f"Średnia droga λ: 0"
-                i.caption = f"Częstość zderzeń: 0"
-            elif zap.mouse_over_button(pos):
-                pl = open(nazwa_pliku, 'a')
-                pl.write(str(odb))
-                pl.write(" ")
-                pl.write(str(droga))
-                pl.write(" ")
-                if (len(lambdy) > 0):
-                    pl.write(str(srednia))
-                else:
-                    pl.write("0")
-                pl.write(" ")
-                pl.write(str(czestosc))
-                pl.write("\n")
-
-                pl.close()
-
-        elif event.type == pygame.MOUSEMOTION:
-            for przycisk in przyciski:
-                przycisk.mouse_over_button(pos)
-
-        elif event.type == pygame.VIDEORESIZE:
-            # tlo = pygame.transform.scale(tlo, (event.w, event.h))
-            screen = pygame.display.set_mode(
-                (event.w, event.h), pygame.RESIZABLE)
-
-    ruch(screen, con_y, con_y + H, con_x, con_x + L)
-
-    pygame.display.flip()  # wyświetla obiekty
-    czas.tick(krok_czasu)  # spowalnia, max 60 klatek na sekundę
-
-    if pomiar:
-        time += 1
+    if delta_t > 0:
         delta_t -= 1
+        time += 1
+        t = czas.tick(krok_czasu)  # spowalnia, max 60 klatek na sekundę
+        pos = pygame.mouse.get_pos()
 
-        es.caption = f"{delta_t//60}:{delta_t%60}"
-        if delta_t < 0:
-            f.caption = f"Liczba zderzeń: {len(lambdy)}"
-            odb = len(lambdy)
-            g.caption = f"Przebyta droga: {round(sum(lambdy),4)}"
-            droga = round(sum(lambdy), 4)
-            h.caption = f"Średnia droga λ: {round(sum(lambdy)/len(lambdy),4)}"
-            srednia = round(sum(lambdy) / len(lambdy), 4)
-            i.caption = f"Częstość zderzeń: {round(len(lambdy)/(M * krok_czasu),4)}"
-            czestosc = round(len(lambdy) / (M * krok_czasu), 4)
-            pomiar = False
-            es.caption = "Start"
-            przyciski.append(zap)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # wyście iksem z okienka konczy program
+                pygame.quit()
+                sys.exit()
+
+
+        screen.fill((100, 100, 100))  # zmienia kolor tła okna
+        for atom in atomy:
+            #print(atom.x, atom.y)
+            pygame.draw.circle(screen,atom.col,(int(atom.x),int(atom.y)), int(atom.r))
+        ruch()
+        # rysowanie menu
+        #rys_menu(screen)
+        pygame.display.update()
+
+    else:
+        screen.fill((100, 100, 100))  # zmienia kolor tła okna
+        pos = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # wyście iksem z okienka konczy program
+                f = open(nazwa, 'a')
+                f.write(str(len(lambdy)))
+                f.write(" ")
+                f.write(str(sum(lambdy)))
+                f.write(" ")
+                if (len(lambdy)>0):
+                    f.write(str(sum(lambdy) / len(lambdy)))
+                else:
+                    f.write("0")
+                f.write(" ")
+                f.write(str(len(lambdy) / (M * krok_czasu)))
+                f.write("\n")
+
+                f.close()
+                pygame.quit()
+                sys.exit()
+
+        font = pygame.font.SysFont("ebrima", 20)
+        text1 = font.render(f"Liczba zderzeń: {len(lambdy)}", False, (0, 0, 0))
+        text2 = font.render(f"Przebyta droga: {sum(lambdy)}", False, (0, 0, 0))
+        if (len(lambdy) > 0):
+            text3 = font.render(f"Średnia droga między zderzeniami: {sum(lambdy) / len(lambdy)}", False, (0, 0, 0))
+        else:
+            text3 = font.render("0",False, (0, 0, 0))
+        text4 = font.render(f"Częstość zderzeń: {len(lambdy) / (M * krok_czasu)}", False, (0, 0, 0))
+        screen.blit(text1, (0, 0))
+        screen.blit(text2, (0, 20))
+        screen.blit(text3, (0, 40))
+        screen.blit(text4, (0, 60))
+
+        pygame.display.flip()
+
