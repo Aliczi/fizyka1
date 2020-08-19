@@ -136,7 +136,7 @@ class Atom:
         atom.speed_x -= x2
         atom.speed_y -= y2
 
-    def decide_distance(self, atom):
+    def check_distance(self, atom):
 
         a_road = math.sqrt((atom.x - (self.x - self.speed_x / 10)) ** 2 + (atom.y - (self.y - self.speed_y / 10)) ** 2)
         b_road = math.sqrt((self.x - (atom.x - atom.speed_x / 10)) ** 2 + (self.y - (atom.y - atom.speed_y / 10)) ** 2)
@@ -234,7 +234,7 @@ def ruch(window, top, bottom, left, right):
                     pos1 = (atomy[0].x, atomy[0].y)
 
                 # Znalezienie optymalnego sposobu rozdzielenia atomów
-                ans = atomy[i].decide_distance(atomy[j])
+                ans = atomy[i].check_distance(atomy[j])
 
                 # Oddalenie od siebie atomów
                 while s > atomy[i].distance(atomy[j]):
