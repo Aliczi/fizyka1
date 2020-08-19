@@ -112,29 +112,24 @@ class Atom:
         ys = self.y
         xs1 = atom.x
         ys1 = atom.y
-        tupl = (xs - xs1,  # (r1 - r2)
-                ys - ys1)
-
-        tupl2 = (xs1 - xs,  # (r2 - r1)
-                 ys1 - ys)
-
-        d = (tupl[0] ** 2) + (tupl[1] ** 2)
-
-        dot1 = ((self.speed_x - atom.speed_x) * tupl[0] + (
-                self.speed_y - atom.speed_y) * tupl[1]) / d  # (dot/d)
-
-        dot2 = ((atom.speed_x - self.speed_x) * tupl2[0] + (  # drugi atom
-                atom.speed_y - self.speed_y) * tupl2[1]) / d
-
-        x1 = dot1 * tupl[0]
-        y1 = dot1 * tupl[1]
-        x2 = dot2 * tupl2[0]
-        y2 = dot2 * tupl2[1]
-
-        self.speed_x -= x1
-        self.speed_y -= y1
-        atom.speed_x -= x2
-        atom.speed_y -= y2
+        n = [None, None]
+        t = [None, None]
+        n[0] = (xs1 - xs) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
+        n[1] = (ys1 - ys) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
+        t[0] = (-1.0 * (ys1 - ys)) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
+        t[1] = (xs1 - xs) / (((xs1 - xs) ** 2 + (ys1 - ys) ** 2) ** 0.5)
+        v1 = [self.speed_x, self.speed_y]
+        v2 = [atom.speed_x, atom.speed_y]
+        vn1 = vt1 = vn2 = vt2 = 0
+        for i in range(2):
+            vn1 += v1[i] * n[i]
+            vt1 += v1[i] * t[i]
+            vn2 += v2[i] * n[i]
+            vt2 += v2[i] * t[i]
+        vn1, vn2 = vn2, vn1
+        v1[0], v1[1], v2[0], v2[1] = vn1 * n[0] + vt1 * t[0], vn1 * n[1] + vt1 * t[1], vn2 * n[0] + vt2 * t[0], vn2 * n[
+            1] + vt2 * t[1]
+        self.speed_x, self.speed_y, atom.speed_x, atom.speed_y = v1[0], v1[1], v2[0], v2[1]
 
     def check_distance(self, atom):
 
