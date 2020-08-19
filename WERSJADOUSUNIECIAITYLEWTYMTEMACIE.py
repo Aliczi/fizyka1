@@ -202,17 +202,40 @@ class Atom:
 
     def which_closer(self, atom):
         s=math.sqrt((atom.x - self.x) ** 2 + (self.y - atom.y) ** 2)
+        # a
         ale = self.y - self.speed_y / 10
         ble = self.x - self.speed_x / 10
-        sself = math.sqrt((atom.x - ble) ** 2 + (ale - atom.y) ** 2)
+        aroad = math.sqrt((atom.x - ble) ** 2 + (ale - atom.y) ** 2)
+        # b
         cle = atom.y - atom.speed_y / 10
         dle = atom.x - atom.speed_x / 10
-        satom = math.sqrt((dle - self.x) ** 2 + (self.y - cle) ** 2)
+        broad = math.sqrt((dle - self.x) ** 2 + (self.y - cle) ** 2)
+        # c
+        ccle = atom.y - atom.speed_y / 10
+        ccle2 = self.y - self.speed_y /10
+        croad = math.sqrt((atom.x - self.x) ** 2 + (ccle - ccle2) ** 2)
+        # d
+        ddle = atom.x - atom.speed_x / 10
+        ddle2 = self.x - self.speed_x / 10
+        droad = math.sqrt((ddle - ddle2) ** 2 + (self.y - atom.y) ** 2)
 
-        if sself>satom:
-            return True
+        # e
+        elex = atom.x - atom.speed_x / 10
+        elex2 = atom.y - atom.speed_y / 10
+        eley = self.x - self.speed_x / 10
+        eley2 = self.y - self.speed_y / 10
+        eroad = math.sqrt((elex - eley) ** 2 + (elex2 - eley2) ** 2)
+        list = [aroad, broad, croad, droad, eroad]
+        if aroad == max(list):
+                return "a"
+        elif broad == max(list):
+            return "b"
+        if croad == max(list):
+            return "c"
+        if droad == max(list):
+            return "d"
         else:
-            return False
+            return "e"
 
 
 """________________________________Dodatkowy atom______________________________________"""
@@ -265,8 +288,10 @@ def dodaj(ile):
     for i in range(ile):
         xx=co[i][0]
         yy=co[i][1]
+        kol = (random.uniform(0, 255), random.uniform(0, 255),random.uniform(0, 255))
+        kol = (0,0,255)
         sx,sy = random.uniform(-1.0 * vGen, vGen), random.uniform(-1.0 * vGen, vGen)
-        atomy.append(Atom(xx, yy, sx,sy, 2*R, (0, 0, 255)))
+        atomy.append(Atom(xx, yy, sx,sy, 2*R, kol))
         sprawd.append((xx,yy,sx,sy))
 
 def dodaj2(top, bottom, left, right):
@@ -311,9 +336,7 @@ def ruch(window, top, bottom, left, right):
                 pos1 = (atomy[0].x, atomy[0].y)
 
             # Odbicie
-            if s  <= atomy[i].dystans(atomy[j]) <= s + tol  and (i != atomy[j].bounce or j != atomy[i].bounce):
-                # print("ładnie")
-                # print(atomy[i].dystans(atomy[j]))
+            if s  <= atomy[i].dystans(atomy[j]) <= s + tol and (i != atomy[j].bounce or j != atomy[i].bounce):
                 if i == 0 or j == 0:
                     lambdy.append(
                         math.sqrt((time * atomy[0].speed_x) ** 2 + (time * atomy[0].speed_y) ** 2))
@@ -353,67 +376,41 @@ def ruch(window, top, bottom, left, right):
             # sprawdzanie czy atomy w siebie "wniknęły" po przemieszczeniu, jeżeli tak to oddalają się od siebie
             elif s > atomy[i].dystans(atomy[j]) and (i != atomy[j].bounce or j != atomy[i].bounce):
                 # print("A", atomy[0].x, atomy[0].y, atomy[1].x, atomy[1].y)
+                ans = atomy[i].which_closer(atomy[j])
+                # print(ans)
+
                 while s > atomy[i].dystans(atomy[j]):
                     global aaa, bbb, ccc, ddd,aa,bb,cc,dd
+                    if ans == "a":
+                        atomy[i].x -= atomy[i].speed_x / 30
+                        atomy[i].y -= atomy[i].speed_y / 30
 
-                    if atomy[i].speed_x*atomy[j].speed_x < 0 and atomy[i].speed_y*atomy[j].speed_y >= 0:
+                    elif ans == "b":
+                        atomy[j].x -= atomy[j].speed_x / 30
+                        atomy[j].y -= atomy[j].speed_y / 30
+
+                    elif ans == "d":
                         # print("ifxxxxxxxxxxx")
                         # print(atomy[i].dystans(atomy[j]))
-                        aaa=1
                         atomy[i].x -= atomy[i].speed_x / 30
                         atomy[j].x -= atomy[j].speed_x / 30
-                        if i == 91 and j == 91:
-                            print("if",i, j, s, atomy[i].dystans(atomy[j]), atomy[i].x, atomy[i].y, atomy[j].x, atomy[j].y)
 
-                    elif atomy[i].speed_x*atomy[j].speed_x >= 0 and atomy[i].speed_y*atomy[j].speed_y < 0:
+
+                    elif ans == "c":
                         # print("elifyyyyy")
                         # print(atomy[i].dystans(atomy[j]))
                         bbb=1
                         atomy[i].y -= atomy[i].speed_y / 30
                         atomy[j].y -= atomy[j].speed_y / 30
-                        if i == 91 and j == 91:
-                            print("elif",i, j, s, atomy[i].dystans(atomy[j]), atomy[i].x, atomy[i].y, atomy[j].x, atomy[j].y)
-                    elif atomy[i].speed_x * atomy[j].speed_x >= 0 and atomy[i].speed_y * atomy[j].speed_y >= 0:
-                        # print("elifffxxxxxxxxxxxxyyyyyyyyyyyyyyy", atomy[i].dystans((atomy[j])))
-                        ccc=1
-                        if atomy[i].which_closer(atomy[j]) and  i!=1:
-                            print(True, atomy[i].dystans(atomy[j]))
-                            atomy[i].y -= atomy[i].speed_y / 10
-                            atomy[i].x -= atomy[i].speed_x / 10
-                        else:
-                            if i!=1:
-                                print(False)
-                                atomy[j].y -= atomy[j].speed_y / 10
-                                atomy[j].x -= atomy[j].speed_x / 10
-
-                        if i==1:
-                            print("111111111111111111111111111")
-                            atomy[j].y -= atomy[j].speed_y / 10
-                            atomy[j].x -= atomy[j].speed_x / 10
-                        else:
-                            atomy[i].y -= atomy[i].speed_y / 10
-                            atomy[i].x -= atomy[i].speed_x / 10
-
-                        if i == 91 and j == 91:
-                            print("elif", i, j, s, atomy[i].dystans(atomy[j]), atomy[i].x, atomy[i].y, atomy[j].x,
-                                  atomy[j].y)
+                        # if i == 91 and j == 91:
+                        #     print("elif",i, j, s, atomy[i].dystans(atomy[j]), atomy[i].x, atomy[i].y, atomy[j].x, atomy[j].y)
 
                     else:
                         # print("elseee", atomy[i].dystans(atomy[j]), atomy[i].speed_x * atomy[j].speed_x, atomy[i].speed_y * atomy[j].speed_y)
-                        ddd=1
-                        if i==1:
-                            print("111111111111111111111111111")
-                            atomy[i].x -= atomy[i].speed_x / 30
-                            atomy[i].y -= atomy[i].speed_y / 30
-
-                            atomy[j].x += atomy[j].speed_x / 30
-                            atomy[j].y += atomy[j].speed_y / 30
-                        else:
-                            atomy[i].x -= atomy[i].speed_x / 30
-                            atomy[i].y -= atomy[i].speed_y / 30
-
-                            atomy[j].x -= atomy[j].speed_x / 30
-                            atomy[j].y -= atomy[j].speed_y / 30
+                        atomy[i].x -= atomy[i].speed_x / 30
+                        atomy[i].y -= atomy[i].speed_y / 30
+                        atomy[j].x -= atomy[j].speed_x / 30
+                        atomy[j].y -= atomy[j].speed_y / 30
                         # print("elseee2", atomy[i].dystans(atomy[j]))
                         # if j == 91 or i == 91:
                         #     print("else",i, j, s, atomy[i].dystans(atomy[j]), atomy[i].x, atomy[i].y, atomy[j].x, atomy[j].y)
@@ -425,26 +422,11 @@ def ruch(window, top, bottom, left, right):
                 #
                 #     atomy[j].x -= atomy[j].speed_x/6
                 #     atomy[j].y -= atomy[j].speed_y/6
-                #
-                #
-                #
-                # # while 19.2 > atomy[i].dystans(atomy[j]):
-                # #     h = s - atomy[i].dystans(atomy[j])
-                # #     atomy[i].x -= atomy[i].speed_x / 6
-                # #     atomy[i].y -= atomy[i].speed_y / 6
-                # #
-                # #     atomy[j].x -= atomy[j].speed_x / 6
-                # #     atomy[j].y -= atomy[j].speed_y / 6
-                # #
-                # #     break
+
 
                     if i == 32 and j== 84:
                         print(i, j, s, atomy[i].dystans(atomy[j]), atomy[i].x, atomy[i].y, atomy[j].x, atomy[j].y)
-                aa+=aaa
-                bb+=bbb
-                cc+=ccc
-                dd+=ddd
-                aaa, bbb, ccc, ddd = 0, 0, 0, 0
+                print(atomy[i].dystans(atomy[j]))
                 if i == 0 or j == 0:
                     pos2 = (atomy[0].x, atomy[0].y)
 
@@ -649,6 +631,3 @@ while True:
             es.caption = "Start"
             przyciski.append(zap)
             atomy.pop(0)
-
-
-    print(aa,bb,cc,dd)
