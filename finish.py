@@ -497,3 +497,4 @@ while True:
             es.caption = "Start"
             przyciski.append(zap)
             atomy.pop(0)
+            a.caption = f"Liczba atomów: {len(atomy)}"
