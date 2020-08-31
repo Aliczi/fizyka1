@@ -443,6 +443,7 @@ while True:
                 g.caption = f"Przebyta droga: 0"
                 h.caption = f"Średnia droga λ: 0"
                 i.caption = f"Częstość zderzeń: 0"
+                e.caption = f"Czekaj..."
             elif zap.mouse_over_button(pos):
                 pl = open(nazwa_pliku, 'a')
                 pl.write(str(odb))
@@ -492,3 +493,4 @@ while True:
             przyciski.append(zap)
             atomy.pop(0)
             a.caption = f"Liczba atomów: {len(atomy)}"
+            e.caption = f"Dokonaj pomiaru -> "
