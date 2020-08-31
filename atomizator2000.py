@@ -415,7 +415,7 @@ while True:
                 atomy = []
                 add_atoms(ilosc)
             # zmiana kroku czasu
-            elif cm.mouse_over_button(pos) and krok_czasu >= 10:
+            elif cm.mouse_over_button(pos) and krok_czasu >= 20:
                 krok_czasu -= 10
                 c.caption = f"Krok czasu δt: {krok_czasu}"
             elif cp.mouse_over_button(pos):
